@@ -98,7 +98,7 @@ class BoardLocation {
     }
 
     // TODO: Do this better
-    fun setPaint(col: Int, row: Int) {
+    private fun setPaint(col: Int, row: Int) {
         squareColor.setColor(if ((col + row) % 2 == 0) Color.BLACK else Color.WHITE)
     }
 }
