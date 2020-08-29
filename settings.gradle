@@ -1,2 +1,3 @@
+include ':Example'
 include ':Engine'
 rootProject.name = "Kotlin Chess"

@@ -1,4 +1,4 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
@@ -6,7 +6,6 @@ android {
     compileSdkVersion 29
 
     defaultConfig {
-        applicationId "com.cortland.kotlinchess"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
