@@ -1,0 +1,2 @@
+include ':Engine'
+rootProject.name = "Kotlin Chess"
