@@ -47,4 +47,89 @@ class Board {
         }
     }
 
+    fun printBoardColors() {
+
+        printBoard { square ->
+            square.piece.let { piece ->
+                if (piece?.color == Color.white) 'W' else 'B'
+            }
+        }
+
+    }
+
+    fun printBoardPieces() {
+
+        printBoard { square ->
+            var character: Char? = null
+
+            val piece = square.piece
+
+            when (piece?.type) {
+                PieceType.pawn -> character = 'P'
+                PieceType.rook -> character = 'R'
+                PieceType.knight -> character = 'N'
+                PieceType.bishop -> character = 'B'
+                PieceType.queen -> character = 'Q'
+                PieceType.king -> character = 'K'
+            }
+
+            character
+        }
+    }
+
+    fun printBoardState() {
+
+        printBoard { square ->
+            var character: Char? = null
+
+            var piece = square.piece
+
+            when(piece?.type) {
+                PieceType.pawn -> {
+                    character = if (piece.color == Color.white) 'P' else 'p'
+                }
+                PieceType.rook -> {
+                    character = if (piece.color == Color.white) 'R' else 'r'
+                }
+                PieceType.knight -> {
+                    character = if (piece.color == Color.white) 'N' else 'n'
+                }
+                PieceType.bishop -> {
+                    character = if (piece.color == Color.white) 'B' else 'b'
+                }
+                PieceType.queen -> {
+                    character = if (piece.color == Color.white) 'Q' else 'q'
+                }
+                PieceType.king -> {
+                    character = if (piece.color == Color.white) 'K' else 'k'
+                }
+                null -> {
+                    character = null
+                }
+            }
+
+            character
+        }
+
+    }
+
+
+
+    fun printBoard(squarePrinter: (Square) -> Char?) {
+
+        var printString = StringBuilder()
+
+        for (y in (0..7).reversed()) {
+            for (x in 0..7) {
+                val index = y * 8 + x
+                val character = squarePrinter(squares[index])
+                printString.append(character ?: "-")
+            }
+
+            printString.append("\n")
+        }
+
+        println(printString)
+    }
+
 }
