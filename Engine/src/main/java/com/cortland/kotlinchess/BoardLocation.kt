@@ -23,10 +23,24 @@ class BoardLocation {
     var x: Int = index % 8
     var y: Int = index / 8
 
-    private var squareColor = Paint()
+    var squareColor = Paint()
     private var boardLocationRect: Rect = Rect()
 
-    var allLocationsBacking: Array<BoardLocation>? = null
+    var allLocationsBacking: ArrayList<BoardLocation>? = null
+    var all = {
+        val allLocations = allLocationsBacking
+        if (allLocations != null) {
+            allLocations
+        } else {
+            val locations = ArrayList<BoardLocation>()
+            (0..63).forEach {
+                locations.add(BoardLocation(index = it))
+            }
+
+            allLocationsBacking = locations
+            allLocationsBacking
+        }
+    }
 
     fun draw(canvas: Canvas) {
         canvas.drawRect(boardLocationRect, squareColor)
