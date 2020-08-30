@@ -47,6 +47,15 @@ class Board {
         }
     }
 
+    fun pieceAtIndex(index: Int): Piece? {
+        return squares[index].piece
+    }
+
+    fun movePiece(fromIndex: Int, toIndex: Int) {
+        squares[toIndex].piece = this.squares[fromIndex].piece
+        squares[fromIndex].piece = null
+    }
+
     fun printBoardColors() {
 
         printBoard { square ->
