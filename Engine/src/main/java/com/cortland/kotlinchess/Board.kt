@@ -47,6 +47,10 @@ class Board {
         }
     }
 
+    fun getPiece(location: BoardLocation): Piece? {
+        return squares[location.index].piece
+    }
+
     fun pieceAtIndex(index: Int): Piece? {
         return squares[index].piece
     }
