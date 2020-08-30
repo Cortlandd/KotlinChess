@@ -18,27 +18,39 @@ class BoardLocation {
         a8, b8, c8, d8, e8, f8, g8, h8
     }
 
-    var index: Int = 0
+    var index: Int
+        set(value) {
+            field = value
+            x = value % 8
+            y = value / 8
+        }
 
-    var x: Int = index % 8
-    var y: Int = index / 8
+    var x: Int = 0
+        get() = index % 8
+
+    var y: Int = 0
+        get() = index / 8
 
     var squareColor = Paint()
     private var boardLocationRect: Rect = Rect()
 
-    var allLocationsBacking: ArrayList<BoardLocation>? = null
-    var all = {
-        val allLocations = allLocationsBacking
-        if (allLocations != null) {
-            allLocations
-        } else {
-            val locations = ArrayList<BoardLocation>()
-            (0..63).forEach {
-                locations.add(BoardLocation(index = it))
-            }
+    companion object {
+        private val TAG = BoardLocation::class.java.simpleName
 
-            allLocationsBacking = locations
-            allLocationsBacking
+        private var allLocationsBacking: ArrayList<BoardLocation>? = null
+
+        fun all(): ArrayList<BoardLocation> {
+            return if (allLocationsBacking != null) {
+                allLocationsBacking!!
+            } else {
+                val locations = ArrayList<BoardLocation>()
+                (0..63).forEach {
+                    locations.add(BoardLocation(index = it))
+                }
+
+                allLocationsBacking = locations
+                allLocationsBacking!!
+            }
         }
     }
 
@@ -87,10 +99,6 @@ class BoardLocation {
         val column = columnString
         val row = rowString
         return "<BoardLocation $column$row>"
-    }
-
-    companion object {
-        private val TAG = BoardLocation::class.java.simpleName
     }
 
     constructor(index: Int) {
