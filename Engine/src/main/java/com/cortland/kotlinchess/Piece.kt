@@ -11,7 +11,11 @@ enum class PieceType {
 
 enum class Color {
     white,
-    black
+    black;
+
+    fun opposite(): Color {
+        return if (this == white) black else white
+    }
 }
 
 class Piece(var type: PieceType, var color: Color)
