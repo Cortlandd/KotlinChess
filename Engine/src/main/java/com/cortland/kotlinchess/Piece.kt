@@ -14,15 +14,4 @@ enum class Color {
     black
 }
 
-class Piece(type: PieceType, color: Color) {
-
-    var type: PieceType
-    var color: Color
-
-    init {
-        this.type = type
-        this.color = color
-    }
-
-
-}
+class Piece(var type: PieceType, var color: Color)
