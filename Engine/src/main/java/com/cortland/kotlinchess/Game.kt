@@ -3,6 +3,7 @@ package com.cortland.kotlinchess
 class Game: PlayerListener {
 
     var board = Board(state = Board.InitialState.newGame)
+
     var whitePlayer: Player
     var blackPlayer: Player
     var currentPlayer: Player
@@ -10,10 +11,10 @@ class Game: PlayerListener {
     var gameListener: GameListener? = null
 
     init {
-        this.whitePlayer = Player(Color.white, game = this)
+        this.whitePlayer = Human(Color.white, game = this)
         this.whitePlayer.playerListener = this
 
-        this.blackPlayer = Player(Color.black, game = this)
+        this.blackPlayer = Human(Color.black, game = this)
         this.blackPlayer.playerListener = this
 
         this.currentPlayer = this.whitePlayer
@@ -22,14 +23,14 @@ class Game: PlayerListener {
     override fun playerDidMakeMove(player: Player) {
 
         // This shouldn't happen, but print a message in case it does
-        if (player != currentPlayer) {
+        if (player !== currentPlayer) {
             print("Warning - Wrong player took turn")
         }
 
         // Switch to the other player
-        currentPlayer = if (player == whitePlayer) {
+        currentPlayer = if (player === whitePlayer) {
             blackPlayer
-        } else{
+        } else {
             whitePlayer
         }
 
