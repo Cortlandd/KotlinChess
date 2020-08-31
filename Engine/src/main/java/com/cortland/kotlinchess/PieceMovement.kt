@@ -226,68 +226,33 @@ class PieceMovementPawn: PieceMovement() {
             return false
         }
 
-        val color = movingPiece.color
+        val offsets = ArrayList<Pair<Int, Int>>()
 
-        var forwardStrides = ArrayList<BoardStride>()
+        val color = movingPiece.color
 
         // Add one ahead offset
         if (color == Color.white) {
-            forwardStrides.add(BoardStride(0, 1))
+            offsets.add(Pair(0,1))
         }
         else {
-            forwardStrides.add(BoardStride(0, -1))
+            offsets.add(Pair(0,-1))
         }
 
         // Add the two ahead offset
         if (color == Color.white && fromLocation.y == 1) {
-            forwardStrides.add(BoardStride(0, 2))
+            offsets.add(Pair(0,2))
         }
         else if (color == Color.black && fromLocation.y == 6) {
-            forwardStrides.add(BoardStride(0, -2))
+            offsets.add(Pair(0,-2))
         }
 
-        for (stride in forwardStrides) {
+        for (offset in offsets) {
 
-            if (!fromLocation.canIncrementBy(stride)) {
-                continue
-            }
+            val offsetLocation = fromLocation.incrementedBy(offset.first, offset.second)
 
-            val location = fromLocation.incrementedBy(stride)
-
-            var piece = board.getPiece(location) ?: continue
-
-            if (location == toLocation) {
+            if (toLocation == offsetLocation && canPieceOccupySquare(fromLocation, offset.first, offset.second, board)) {
                 return true
             }
-        }
-
-        // ****** Test Diagonal locations ******
-        var diagonalStrides = ArrayList<BoardStride>()
-
-        if (color == Color.white) {
-            diagonalStrides.add(BoardStride(-1, 1))
-            diagonalStrides.add(BoardStride(1, 1))
-        } else {
-            diagonalStrides.add(BoardStride(-1, -1))
-            diagonalStrides.add(BoardStride(1, -1))
-        }
-
-        for (stride in diagonalStrides) {
-
-            if (!fromLocation.canIncrementBy(stride)) { continue }
-
-            val location = fromLocation.incrementedBy(stride)
-
-            if (location != toLocation) {
-                continue
-            }
-
-            board.getPiece(location)?.also {
-                if (it.color == color.opposite()) {
-                    return true
-                }
-            }
-
         }
 
         return false
