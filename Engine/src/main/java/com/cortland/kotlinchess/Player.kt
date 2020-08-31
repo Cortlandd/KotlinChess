@@ -2,6 +2,8 @@ package com.cortland.kotlinchess
 
 class Player(var color: Color, var game: Game) {
 
+    var playerListener: PlayerListener? = null
+
     enum class PieceMoveError {
         movingToSameLocation,
         noPieceToMove,
@@ -19,12 +21,25 @@ class Player(var color: Color, var game: Game) {
     }
 
     fun movePiece(fromLocation: BoardLocation, toLocation: BoardLocation) {
+
+        // Check that we're the current player
+        if (game.currentPlayer !== this) {
+            print("Cannot move piece, is not $color player's turn")
+            return
+        }
+
         // Check if move is allowed
         val canMove = canMovePieceWithError(fromLocation, toLocation)
-        println("canmove $canMove")
+
+        if (!canMove) {
+            return
+        }
 
         // Move the piece
         game.board.movePiece(fromLocation, toLocation)
+
+        // Inform Player Listener
+        playerListener?.playerDidMakeMove(this)
     }
 
     fun occupiesSquareAt(location: BoardLocation): Boolean {
