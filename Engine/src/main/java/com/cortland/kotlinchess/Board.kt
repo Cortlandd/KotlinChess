@@ -8,43 +8,61 @@ class Square {
 
 class Board {
 
-    var squares: ArrayList<Square> = ArrayList()
+    enum class InitialState {
+        empty, newGame
+    }
 
-    init {
-
-        for (i in 0..64) {
+    constructor(state: InitialState) {
+        // Setup squares
+        (0..63).forEach {
             squares.add(Square())
         }
 
+        // Setup for new game?
+        if (state == InitialState.newGame) {
+            setupForNewGame()
+        }
+    }
+
+    var squares: ArrayList<Square> = ArrayList()
+
+    fun setupForNewGame() {
+
         // Setup white bottom row
-        this.squares[0].piece = Piece(type = PieceType.rook, color = Color.white)
-        this.squares[1].piece = Piece(type = PieceType.knight, color = Color.white)
-        this.squares[2].piece = Piece(type = PieceType.bishop, color = Color.white)
-        this.squares[3].piece = Piece(type = PieceType.queen, color = Color.white)
-        this.squares[4].piece = Piece(type = PieceType.king, color = Color.white)
-        this.squares[5].piece = Piece(type = PieceType.bishop, color = Color.white)
-        this.squares[6].piece = Piece(type = PieceType.knight, color = Color.white)
-        this.squares[7].piece = Piece(type = PieceType.rook, color = Color.white)
+        squares[0].piece = Piece(type = PieceType.rook, color = Color.white)
+        squares[1].piece = Piece(type = PieceType.knight, color = Color.white)
+        squares[2].piece = Piece(type = PieceType.bishop, color = Color.white)
+        squares[3].piece = Piece(type = PieceType.queen, color = Color.white)
+        squares[4].piece = Piece(type = PieceType.king, color = Color.white)
+        squares[5].piece = Piece(type = PieceType.bishop, color = Color.white)
+        squares[6].piece = Piece(type = PieceType.knight, color = Color.white)
+        squares[7].piece = Piece(type = PieceType.rook, color = Color.white)
 
         // Setup white pawn row
         for (i in 8..15) {
-            this.squares[i].piece = Piece(type = PieceType.pawn, color = Color.white)
+            squares[i].piece = Piece(type = PieceType.pawn, color = Color.white)
         }
 
         // Setup black bottom row
-        this.squares[63].piece = Piece(type = PieceType.rook, color = Color.black)
-        this.squares[62].piece = Piece(type = PieceType.knight, color = Color.black)
-        this.squares[61].piece = Piece(type = PieceType.bishop, color = Color.black)
-        this.squares[60].piece = Piece(type = PieceType.queen, color = Color.black)
-        this.squares[59].piece = Piece(type = PieceType.king, color = Color.black)
-        this.squares[58].piece = Piece(type = PieceType.bishop, color = Color.black)
-        this.squares[57].piece = Piece(type = PieceType.knight, color = Color.black)
-        this.squares[56].piece = Piece(type = PieceType.rook, color = Color.black)
+        squares[63].piece = Piece(type = PieceType.rook, color = Color.black)
+        squares[62].piece = Piece(type = PieceType.knight, color = Color.black)
+        squares[61].piece = Piece(type = PieceType.bishop, color = Color.black)
+        squares[60].piece = Piece(type = PieceType.queen, color = Color.black)
+        squares[59].piece = Piece(type = PieceType.king, color = Color.black)
+        squares[58].piece = Piece(type = PieceType.bishop, color = Color.black)
+        squares[57].piece = Piece(type = PieceType.knight, color = Color.black)
+        squares[56].piece = Piece(type = PieceType.rook, color = Color.black)
 
         // Setup black pawn row
         for (i in 48..55) {
-            this.squares[i].piece = Piece(type = PieceType.pawn, color = Color.black)
+            squares[i].piece = Piece(type = PieceType.pawn, color = Color.black)
         }
+    }
+
+    // Pieces
+
+    fun setPiece(piece: Piece, location: BoardLocation) {
+        squares[location.index].piece = piece
     }
 
     fun getPiece(location: BoardLocation): Piece? {
@@ -55,9 +73,9 @@ class Board {
         return squares[index].piece
     }
 
-    fun movePiece(fromIndex: Int, toIndex: Int) {
-        squares[toIndex].piece = this.squares[fromIndex].piece
-        squares[fromIndex].piece = null
+    fun movePiece(fromLocation: BoardLocation, toLocation: BoardLocation) {
+        squares[toLocation.index].piece = this.squares[fromLocation.index].piece
+        squares[fromLocation.index].piece = null
     }
 
     fun printBoardColors() {
