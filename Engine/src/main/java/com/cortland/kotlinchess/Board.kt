@@ -78,6 +78,94 @@ class Board {
         squares[fromLocation.index].piece = null
     }
 
+    // MARK: - Get Specific pieces
+
+    fun getKing(color: Color): Piece {
+
+        var king: Piece? = null
+
+        for (square in squares) {
+
+            val piece = square.piece ?: continue
+
+            if (piece == Piece(PieceType.king, color)) {
+                king = piece
+                break
+            }
+        }
+
+        // We'll implitly unwrap this, because there should always be a king for each color on the board. If there isn't, it's an error
+        return king!!
+    }
+
+    fun getKingLocation(color: Color): BoardLocation {
+
+        for ((index, square) in squares.withIndex()) {
+
+            val piece = square.piece ?: continue
+
+            if (piece.color == color && piece.type == PieceType.king) {
+                return BoardLocation(index)
+            }
+        }
+
+        throw Exception("Couldn't find $color king. Kings should always exist")
+
+    }
+
+    fun getLocationsOfColor(color: Color): ArrayList<BoardLocation> {
+
+        val locations = ArrayList<BoardLocation>()
+
+        for ((index, square) in squares.withIndex()) {
+
+            val piece = square.piece ?: continue
+
+            if (piece.color == color) {
+                locations.add(BoardLocation(index))
+            }
+        }
+
+        return locations
+    }
+
+    fun getPieces(color: Color): ArrayList<Piece> {
+
+        var pieces = ArrayList<Piece>()
+
+        for (square in squares) {
+
+            val piece = square.piece ?: continue
+
+
+            if (piece.color == color) {
+                pieces.add(piece)
+            }
+        }
+
+        return pieces
+
+    }
+
+    // MARK: - Check / Check mate state
+
+    fun isColorInCheck(color: Color): Boolean {
+
+        val kingLocation = getKingLocation(color)
+        val oppositionLocations = getLocationsOfColor(color.opposite())
+
+        for (location in oppositionLocations) {
+
+            val piece = getPiece(location) ?: continue
+
+            if (piece.movement.canPieceMove(location, kingLocation, this)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
     fun printBoardColors() {
 
         printBoard { square ->
