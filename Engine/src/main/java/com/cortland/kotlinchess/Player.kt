@@ -1,7 +1,9 @@
 package com.cortland.kotlinchess
 
-class Player(var color: Color, var game: Game) {
+open class Player {
 
+    lateinit var color: Color
+    lateinit var game: Game
     var playerListener: PlayerListener? = null
 
     class PieceMoveErrorException(error: PieceMoveError): Exception(error.description)
@@ -26,27 +28,6 @@ class Player(var color: Color, var game: Game) {
                 cannotMoveInToCheck -> PieceMoveErrorException(cannotMoveInToCheck)
             }
         }
-    }
-
-    @Throws(PieceMoveErrorException::class)
-    fun movePiece(fromLocation: BoardLocation, toLocation: BoardLocation) {
-
-        // Check that we're the current player
-        if (game.currentPlayer !== this) {
-            throw PieceMoveError.notThisPlayersTurn.throwPlayerError()
-        }
-
-        // Check if move is allowed
-        val canMove = canMovePieceWithError(fromLocation, toLocation)
-        if (canMove.second != null) {
-            throw canMove.second!!.throwPlayerError()
-        }
-
-        // Move the piece
-        game.board.movePiece(fromLocation, toLocation)
-
-        // Inform Player Listener
-        playerListener?.playerDidMakeMove(this)
     }
 
     fun occupiesSquareAt(location: BoardLocation): Boolean {
