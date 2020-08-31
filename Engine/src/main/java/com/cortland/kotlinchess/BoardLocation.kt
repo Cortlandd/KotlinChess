@@ -118,7 +118,9 @@ class BoardLocation {
 
         // TODO: for performance, we should probably only check this if we're in debug mode
         if (canIncrementBy(stride)) {
-            print("WARNING! BoardLocation is being incremented by a stride that will result in wrapping! call canIncrementBy(stride: BoardStride) first")
+            assert(canIncrementBy(stride), {
+                "WARNING! BoardLocation is being incremented by a stride that will result in wrapping! call canIncrementBy(stride: BoardStride) first"
+            })
         }
 
         return BoardLocation(x + stride.x, y + stride.y)
@@ -126,7 +128,7 @@ class BoardLocation {
 
     operator fun BoardLocation.unaryPlus() = BoardLocation(index + index)
 
-   fun canIncrementBy(stride: BoardStride): Boolean {
+    fun canIncrementBy(stride: BoardStride): Boolean {
 
         // Check will not wrap to right
         if (x + stride.x > 7) {
