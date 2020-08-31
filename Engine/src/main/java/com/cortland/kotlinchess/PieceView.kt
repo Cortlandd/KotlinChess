@@ -3,11 +3,7 @@ package com.cortland.kotlinchess
 import android.content.Context
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
-import android.util.AttributeSet
 import android.view.View
-import com.cortland.kotlinchess.Helpers.didSet
-import com.cortland.kotlinchess.Helpers.varWithObservableSetter
-import com.cortland.kotlinchess.Helpers.willSet
 
 class PieceView @JvmOverloads constructor(context: Context): View(context) {
 
@@ -22,7 +18,11 @@ class PieceView @JvmOverloads constructor(context: Context): View(context) {
     }
 
     var mPieceImage: Drawable? = null
-    var pieceSelected: Boolean by varWithObservableSetter(false).willSet { updateImage() }
+    var pieceSelected: Boolean = false
+        set(value) {
+            field = value
+            updateImage()
+        }
 
     fun updateImage() {
 

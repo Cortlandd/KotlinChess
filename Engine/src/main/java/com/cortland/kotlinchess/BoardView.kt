@@ -2,10 +2,8 @@ package com.cortland.kotlinchess
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Rect
+import android.graphics.*
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -13,10 +11,15 @@ import android.view.View
 class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
     var boardViewListener: BoardViewListener? = null
+    var game: Game
 
     var mPieceViews = ArrayList<PieceView>()
+    var mBoardLocations = ArrayList<BoardLocation>()
     var selectedIndex: Int? = null
-        set(value) = updatePieceViewSelectedStates()
+        set(value) {
+            field = value
+            updatePieceViewSelectedStates()
+        }
 
     var x0 = 0
     var y0 = 0
@@ -26,17 +29,16 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
     var flipped = false
 
     init {
-
+        game = Game()
         isFocusable = true
         buildBoardLocations()
     }
 
     fun buildBoardLocations() {
 
-        val board = Board()
         for (location in BoardLocation.all()) {
-            val piece = board.getPiece(location) ?: continue
-
+            mBoardLocations.add(location)
+            val piece = game.board.getPiece(location) ?: continue
             addPiece(location.x, location.y, piece)
         }
 
@@ -50,26 +52,51 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        val x = event.x.toInt()
-        val y = event.y.toInt()
-        var boardLocation: BoardLocation
-        for (i in 0..63) {
-            val c = i % 8
-            val r = i / 8
-            val index = c + (r * 8)
 
-            try {
-                boardLocation = mPieceViews.first { it.location.index == i }.location
-                if (boardLocation.isTouched(x, y)) {
-                    println("alg location ${getAlgebraicPosition(boardLocation.index)}")
-                    boardViewListener?.onLocationTouched(this, boardLocation)
-                }
-            } catch (e: Exception) {
-                println(e)
+        if (event.action == MotionEvent.ACTION_DOWN) {
+
+            val x = event.x.toInt()
+            val y = event.y.toInt()
+
+            val location = mBoardLocations.find {
+                it.getBoardLocationRect().contains(x, y)
             }
+
+            location?.index?.let { tappedPiece(it) }
+
         }
 
-        return true
+        return super.onTouchEvent(event)
+    }
+
+    fun tappedPiece(index: Int) {
+
+        val location = BoardLocation(index)
+
+        try {
+            this.selectedIndex.let { idx ->
+
+                val selectedLocation = BoardLocation(idx!!)
+
+                val canMove = game.currentPlayer.canMovePiece(fromLocation = selectedLocation, toLocation = location)
+
+                if (canMove) {
+                    game.currentPlayer.movePiece(selectedLocation, location)
+                    this.selectedIndex = null
+                    return
+                }
+            }
+        } catch (e: Exception) {
+            print(e)
+        }
+
+        // Clear selected
+        this.selectedIndex = null
+
+        if (this.game.currentPlayer.occupiesSquareAt(location)) {
+            selectedIndex = index
+        }
+
     }
 
     // MARK: - Private
@@ -88,8 +115,7 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
             val r = i / 8
             val index = c + (r * 8)
 
-            val color =
-                if ((c + r) % 2 == 0) android.graphics.Color.BLUE else android.graphics.Color.BLACK
+            val color = if ((c + r) % 2 == 0) android.graphics.Color.LTGRAY else android.graphics.Color.BLACK
 
             val fill = Paint()
             fill.color = color
@@ -102,6 +128,8 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                 xCoord + squareSize,  // right
                 yCoord + squareSize // bottom
             )
+
+            mBoardLocations[i].setBoardLocationRect(tileRect)
 
             canvas!!.drawRect(tileRect, fill)
 
@@ -119,12 +147,6 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
     fun drawPieces(canvas: Canvas?) {
 
         for (pieceView in mPieceViews) {
-
-            val gridX = pieceView.location.x
-            val gridY = 7 - pieceView.location.y
-
-            val width = canvas?.width?.div(8)
-            val height = canvas?.height?.div(8)
 
             val image = pieceView.mPieceImage!!
 
@@ -159,8 +181,9 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
     fun updatePieceViewSelectedStates() {
 
         for (pieceView in mPieceViews) {
-            pieceView.selected = (pieceView.location.index == selectedIndex)
+            pieceView.pieceSelected = (pieceView.location.index == selectedIndex)
         }
+        invalidate()
     }
 
     fun getSquareSizeWidth(width: Int): Int {
@@ -184,17 +207,17 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
         this.y0 = (height - squareSize * 8) / 2
     }
 
-    fun boardIndexForLocation(bounds: Rect, x: Int, y: Int): Int {
+    fun boardIndexForLocation(xcoord: Int, ycoord: Int): Int {
 
-        var x = x
-        var y = y
+        val x = xcoord
+        var y = ycoord
 
         // Flip y (0 at bottom)
-        y = bounds.height() - y
+        y = height - y
 
         // Get Grid coordinates
-        var gridX = (8.0 * x / bounds.width()).toInt()
-        var gridY = (8.0 * y / bounds.height()).toInt()
+        var gridX = (8.0 * x / width).toInt()
+        var gridY = (8.0 * y / height).toInt()
         gridX = Math.min(7, gridX)
         gridY = Math.min(7, gridY)
 
