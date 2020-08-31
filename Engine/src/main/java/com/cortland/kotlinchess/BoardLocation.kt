@@ -5,6 +5,9 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 
+
+class BoardStride(var x: Int, var y: Int)
+
 class BoardLocation {
 
     enum class GridPosition {
@@ -93,6 +96,59 @@ class BoardLocation {
 
     fun isInBounds(): Boolean {
         return (index < 64 && index >= 0)
+    }
+
+    fun incremented(offset: Int): BoardLocation {
+        return BoardLocation(index + offset)
+    }
+
+    fun incrementedBy(x: Int, y: Int): BoardLocation {
+        return this + BoardLocation(x, y)
+    }
+
+    operator fun plus(right: BoardLocation): BoardLocation {
+        return BoardLocation(this.index + right.index)
+    }
+
+    override operator fun equals(other: Any?): Boolean {
+        return this.index == (other as BoardLocation).index
+    }
+
+    fun incrementedBy(stride: BoardStride): BoardLocation {
+
+        // TODO: for performance, we should probably only check this if we're in debug mode
+        if (canIncrementBy(stride)) {
+            print("WARNING! BoardLocation is being incremented by a stride that will result in wrapping! call canIncrementBy(stride: BoardStride) first")
+        }
+
+        return BoardLocation(x + stride.x, y + stride.y)
+    }
+
+    operator fun BoardLocation.unaryPlus() = BoardLocation(index + index)
+
+   fun canIncrementBy(stride: BoardStride): Boolean {
+
+        // Check will not wrap to right
+        if (x + stride.x > 7) {
+            return false
+        }
+
+        // Check will not wrap to left
+        if (x + stride.x < 0)  {
+            return false
+        }
+
+        // Check will not wrap top
+        if (y + stride.y > 7)  {
+            return false
+        }
+
+        // Check will not wrap bottom
+        if (y + stride.y < 0)  {
+            return false
+        }
+
+        return true
     }
 
     override fun toString(): String {
