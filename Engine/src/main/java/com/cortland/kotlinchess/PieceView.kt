@@ -1,21 +1,28 @@
 package com.cortland.kotlinchess
 
 import android.content.Context
+import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
+import android.util.AttributeSet
+import android.view.View
+import com.cortland.kotlinchess.Helpers.didSet
+import com.cortland.kotlinchess.Helpers.varWithObservableSetter
+import com.cortland.kotlinchess.Helpers.willSet
 
-class PieceView(var piece: Piece, var location: BoardLocation, var context: Context) {
+class PieceView @JvmOverloads constructor(context: Context): View(context) {
 
-    var mPieceImage: Drawable? = null
+    lateinit var piece: Piece
+    lateinit var location: BoardLocation
 
-    var selected = false
-        set(value) = updateImage()
-
-    private var backgroundColor: Int = android.graphics.Color.TRANSPARENT
-
-    init {
+    constructor(piece: Piece, location: BoardLocation, context: Context): this(context) {
+        this.piece = piece
+        this.location = location
 
         updateImage()
     }
+
+    var mPieceImage: Drawable? = null
+    var pieceSelected: Boolean by varWithObservableSetter(false).willSet { updateImage() }
 
     fun updateImage() {
 
@@ -40,7 +47,9 @@ class PieceView(var piece: Piece, var location: BoardLocation, var context: Cont
 
         mPieceImage = context.getDrawable(imageName)
 
-        backgroundColor = if (selected) android.graphics.Color.RED else android.graphics.Color.TRANSPARENT
+        val backgroundColor = if (pieceSelected) android.graphics.Color.RED else android.graphics.Color.TRANSPARENT
+        this.mPieceImage!!.setTintMode(PorterDuff.Mode.SCREEN)
+        this.mPieceImage!!.setTint(backgroundColor)
 
     }
 
