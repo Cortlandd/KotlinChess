@@ -166,6 +166,29 @@ class Board {
         return false
     }
 
+    fun isColorInCheckMate(color: Color): Boolean {
+
+        for (pieceLocation in getLocationsOfColor(color)) {
+
+            val piece = getPiece(pieceLocation) ?: continue
+
+            for (targetLocation in BoardLocation.all()) {
+
+                val canMove = piece.movement.canPieceMove(pieceLocation, targetLocation, this)
+
+                if (canMove) {
+                    val resultBoard = this
+                    resultBoard.movePiece(pieceLocation, targetLocation)
+                    if (resultBoard.isColorInCheck(color) == false) {
+                        return false
+                    }
+                }
+            }
+        }
+
+        return true
+    }
+
     fun printBoardColors() {
 
         printBoard { square ->
