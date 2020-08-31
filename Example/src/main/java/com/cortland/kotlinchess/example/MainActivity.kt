@@ -12,17 +12,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), BoardViewListener {
 
-    lateinit var game: Game
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         boardView.boardViewListener = this
-
-        game = Game()
-        game.board.printBoardState()
-
     }
 
     override fun onLocationTouched(boardView: BoardView, location: BoardLocation) {
