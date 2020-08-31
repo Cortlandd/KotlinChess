@@ -74,6 +74,8 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
 
         println("TAPPED ${getAlgebraicPosition(index)}")
 
+        val player = (this.game.currentPlayer as Human) ?: return
+
         val location = BoardLocation(index)
 
         try {
@@ -93,16 +95,14 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
 
         this.selectedIndex.let { selectedIndex ->
             try {
-                this.game.currentPlayer.movePiece(BoardLocation(selectedIndex!!), location)
-                println("MOVE COMPLETED")
+                player.movePiece(BoardLocation(selectedIndex!!), location)
             } catch (e: Player.PieceMoveErrorException) {
                 println(e.message)
             } catch (e: Exception) {
-                println("something went wrong")
+                print(e.message)
             }
         }
 
-        println("SelectedIndex: ${this.selectedIndex}")
     }
 
     // MARK: - Private
