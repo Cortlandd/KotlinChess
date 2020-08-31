@@ -3,17 +3,15 @@ package com.cortland.kotlinchess
 import android.content.Context
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
-import android.view.View
+import kotlin.properties.Delegates
 
-class PieceView @JvmOverloads constructor(context: Context): View(context) {
+class PieceView(piece: Piece, var location: BoardLocation, var context: Context) {
 
-    lateinit var piece: Piece
-    lateinit var location: BoardLocation
+    var piece: Piece by Delegates.observable(piece) { _, _, _ ->
+        updateImage()
+    }
 
-    constructor(piece: Piece, location: BoardLocation, context: Context): this(context) {
-        this.piece = piece
-        this.location = location
-
+    init {
         updateImage()
     }
 

@@ -8,7 +8,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 
-class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
+class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs), GameListener {
 
     var boardViewListener: BoardViewListener? = null
     var game: Game
@@ -30,6 +30,7 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
 
     init {
         game = Game()
+        game.gameListener = this
         isFocusable = true
         buildBoardLocations()
     }
@@ -71,17 +72,13 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
 
     fun tappedPiece(index: Int) {
 
+        println("TAPPED ${getAlgebraicPosition(index)}")
+
         val location = BoardLocation(index)
 
         try {
             this.selectedIndex.let { idx ->
-
-                val selectedLocation = BoardLocation(idx!!)
-
-                val canMove = game.currentPlayer.canMovePiece(fromLocation = selectedLocation, toLocation = location)
-
-                if (canMove) {
-                    game.currentPlayer.movePiece(selectedLocation, location)
+                if (location == BoardLocation(idx!!)) {
                     this.selectedIndex = null
                     return
                 }
@@ -90,13 +87,22 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
             print(e)
         }
 
-        // Clear selected
-        this.selectedIndex = null
-
         if (this.game.currentPlayer.occupiesSquareAt(location)) {
-            selectedIndex = index
+            this.selectedIndex = index
         }
 
+        this.selectedIndex.let { selectedIndex ->
+            try {
+                this.game.currentPlayer.movePiece(BoardLocation(selectedIndex!!), location)
+                println("MOVE COMPLETED")
+            } catch (e: Player.PieceMoveErrorException) {
+                println(e.message)
+            } catch (e: Exception) {
+                println("something went wrong")
+            }
+        }
+
+        println("SelectedIndex: ${this.selectedIndex}")
     }
 
     // MARK: - Private
@@ -137,7 +143,7 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                 val pieceView = mPieceViews.first { it.location.index == i }
                 pieceView.location.setBoardLocationRect(tileRect)
             } catch (e: Exception) {
-                println(e)
+
             }
 
         }
@@ -223,6 +229,10 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
 
         // Make board index
         return gridX + (gridY*8)
+    }
+
+    override fun gameDidChangeCurrentPlayer(game: Game) {
+        this.selectedIndex = null
     }
 
 }
