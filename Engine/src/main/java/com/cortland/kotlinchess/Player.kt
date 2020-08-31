@@ -4,35 +4,42 @@ class Player(var color: Color, var game: Game) {
 
     var playerListener: PlayerListener? = null
 
-    enum class PieceMoveError {
-        movingToSameLocation,
-        noPieceToMove,
-        pieceColorDoesNotMatchPlayerColor,
-        pieceUnableToMoveToLocation;
+    class PieceMoveErrorException(error: PieceMoveError): Exception(error.description)
 
-        fun printDescription(): String {
+    enum class PieceMoveError(val description: String) {
+        notThisPlayersTurn("Not this players turn"),
+        movingToSameLocation("Moving to the same location"),
+        noPieceToMove("No Piece to move"),
+        pieceColorDoesNotMatchPlayerColor("Piece color does not match player color"),
+        pieceUnableToMoveToLocation("Piece is unable to move to this location"),
+        playerMustMoveOutOfCheck("Player must move out of check"),
+        cannotMoveInToCheck("Cannot move in to check");
+
+        fun throwPlayerError(): PieceMoveErrorException {
             return when(this) {
-                movingToSameLocation -> movingToSameLocation.printDescription()
-                noPieceToMove -> noPieceToMove.printDescription()
-                pieceColorDoesNotMatchPlayerColor -> pieceColorDoesNotMatchPlayerColor.printDescription()
-                pieceUnableToMoveToLocation -> pieceUnableToMoveToLocation.printDescription()
+                notThisPlayersTurn -> PieceMoveErrorException(notThisPlayersTurn)
+                movingToSameLocation -> PieceMoveErrorException(movingToSameLocation)
+                noPieceToMove -> PieceMoveErrorException(noPieceToMove)
+                pieceColorDoesNotMatchPlayerColor -> PieceMoveErrorException(pieceColorDoesNotMatchPlayerColor)
+                pieceUnableToMoveToLocation -> PieceMoveErrorException(pieceUnableToMoveToLocation)
+                playerMustMoveOutOfCheck -> PieceMoveErrorException(playerMustMoveOutOfCheck)
+                cannotMoveInToCheck -> PieceMoveErrorException(cannotMoveInToCheck)
             }
         }
     }
 
+    @Throws(PieceMoveErrorException::class)
     fun movePiece(fromLocation: BoardLocation, toLocation: BoardLocation) {
 
         // Check that we're the current player
         if (game.currentPlayer !== this) {
-            print("Cannot move piece, is not $color player's turn")
-            return
+            throw PieceMoveError.notThisPlayersTurn.throwPlayerError()
         }
 
         // Check if move is allowed
         val canMove = canMovePieceWithError(fromLocation, toLocation)
-
-        if (!canMove) {
-            return
+        if (!canMove.first) {
+            throw canMove.second!!.throwPlayerError()
         }
 
         // Move the piece
@@ -54,35 +61,46 @@ class Player(var color: Color, var game: Game) {
     }
 
     fun canMovePiece(fromLocation: BoardLocation, toLocation: BoardLocation): Boolean {
-        return canMovePieceWithError(fromLocation, toLocation)
+        return canMovePieceWithError(fromLocation, toLocation).first
     }
 
-    fun canMovePieceWithError(fromLocation: BoardLocation, toLocation: BoardLocation): Boolean {
+    fun canMovePieceWithError(fromLocation: BoardLocation, toLocation: BoardLocation): Pair<Boolean, PieceMoveError?> {
 
         // We can't move to our current location
         if (fromLocation == toLocation) {
-            println("Cannot move piece to its current location")
-            return false
+            return Pair(false, PieceMoveError.movingToSameLocation)
         }
 
         // Get the piece
-        val piece = this.game.board.getPiece(fromLocation) ?: return false
+        val piece = this.game.board.getPiece(fromLocation) ?: return Pair(false, PieceMoveError.noPieceToMove)
 
         // Check that the piece color matches the player color
         if (piece.color != this.color) {
-            println("Player color $color cannot move piece of color ${piece.color}")
-            return false
+            return Pair(false, PieceMoveError.pieceColorDoesNotMatchPlayerColor)
         }
 
         // Make sure the piece can move to the location
         if (!piece.movement.canPieceMove(fromLocation, toLocation, game.board)) {
             println("Piece at $fromLocation cannot move to $toLocation")
-            return false
+            return Pair(false, PieceMoveError.pieceUnableToMoveToLocation)
         }
 
-        // Move the piece
-        println("Piece can be moved")
-        return true
+        // Make sure we are not leaving the board state in check
+        val inCheckBeforeMove = this.game.board.isColorInCheck(this.color)
+
+        val board = this.game.board
+        board.movePiece(fromLocation, toLocation)
+        val inCheckAfterMove = board.isColorInCheck(this.color)
+
+        if (inCheckBeforeMove && inCheckAfterMove) {
+            return Pair(false, PieceMoveError.playerMustMoveOutOfCheck)
+        }
+
+        if (!inCheckBeforeMove && inCheckAfterMove) {
+            return Pair(false, PieceMoveError.cannotMoveInToCheck)
+        }
+
+        return Pair(true, null)
     }
 
 }
