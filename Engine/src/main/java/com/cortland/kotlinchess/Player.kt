@@ -38,7 +38,7 @@ class Player(var color: Color, var game: Game) {
 
         // Check if move is allowed
         val canMove = canMovePieceWithError(fromLocation, toLocation)
-        if (!canMove.first) {
+        if (canMove.second != null) {
             throw canMove.second!!.throwPlayerError()
         }
 
