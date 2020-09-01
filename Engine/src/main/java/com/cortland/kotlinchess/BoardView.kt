@@ -159,14 +159,9 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
 
         for (pieceView in mPieceViews) {
 
-            val image = pieceView.mPieceImage!!
-
             val rect = pieceView.location.getBoardLocationRect()
-            image.bounds = Rect(rect.left, rect.top, rect.right, rect.bottom)
-
-            image.draw(canvas!!)
-
-            invalidateDrawable(image)
+            pieceView.clipBounds = Rect(rect.left, rect.top, rect.right, rect.bottom)
+            pieceView.draw(canvas)
 
         }
 
