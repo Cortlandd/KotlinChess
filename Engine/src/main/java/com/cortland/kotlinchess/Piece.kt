@@ -20,7 +20,19 @@ enum class Color {
 
 class Piece(var type: PieceType, var color: Color) {
 
-    val movement: PieceMovement by lazy { PieceMovement.pieceMovement(this.type) }
+    val movement: PieceMovement = PieceMovement.pieceMovement(this.type)
+
+    fun value(): Float {
+
+        when(type) {
+            PieceType.pawn -> return 1f
+            PieceType.rook-> return 2f
+            PieceType.knight-> return 3f
+            PieceType.bishop-> return 4f
+            PieceType.queen-> return 5f
+            PieceType.king-> return 6f
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         val left = this

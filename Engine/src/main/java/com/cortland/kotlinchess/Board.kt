@@ -8,6 +8,8 @@ class Square {
 
 class Board {
 
+    var squares: ArrayList<Square> = ArrayList()
+
     enum class InitialState {
         empty, newGame
     }
@@ -24,9 +26,9 @@ class Board {
         }
     }
 
-    var squares: ArrayList<Square> = ArrayList()
-
     fun setupForNewGame() {
+
+        println("SETUP FOR NEW GAME")
 
         // Setup white bottom row
         squares[0].piece = Piece(type = PieceType.rook, color = Color.white)
@@ -192,8 +194,8 @@ class Board {
     fun printBoardColors() {
 
         printBoard { square ->
-            square.piece.let { piece ->
-                if (piece?.color == Color.white) 'W' else 'B'
+            square.piece?.let { piece ->
+                if (piece.color == Color.white) 'W' else 'B'
             }
         }
 

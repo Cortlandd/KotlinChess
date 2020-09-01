@@ -1,12 +1,17 @@
 package com.cortland.kotlinchess
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
-import android.graphics.Color
+import android.icu.util.TimeUnit
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import com.cortland.kotlinchess.AI.AIPlayer
+import com.cortland.kotlinchess.Interfaces.BoardViewListener
+import com.cortland.kotlinchess.Interfaces.GameListener
+import java.util.*
+import java.util.concurrent.Executors
+import kotlin.collections.ArrayList
 
 class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs), GameListener {
 
@@ -79,8 +84,8 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
         val location = BoardLocation(index)
 
         try {
-            this.selectedIndex.let { idx ->
-                if (location == BoardLocation(idx!!)) {
+            this.selectedIndex?.also { idx ->
+                if (location == BoardLocation(idx)) {
                     this.selectedIndex = null
                     return
                 }
@@ -93,9 +98,9 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
             this.selectedIndex = index
         }
 
-        this.selectedIndex.let { selectedIndex ->
+        this.selectedIndex?.let { selectedIndex ->
             try {
-                player.movePiece(BoardLocation(selectedIndex!!), location)
+                player.movePiece(BoardLocation(selectedIndex), location)
             } catch (e: Player.PieceMoveErrorException) {
                 println(e.message)
             } catch (e: Exception) {
@@ -232,7 +237,20 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
     }
 
     override fun gameDidChangeCurrentPlayer(game: Game) {
+
+        (game.currentPlayer as? AIPlayer)?.let {
+            Timer().schedule(object: TimerTask() {
+                override fun run() {
+                    tellAIToTakeGo()
+                }
+            }, 3000)
+        }
+
         this.selectedIndex = null
+    }
+
+    fun tellAIToTakeGo() {
+        (game.currentPlayer as? AIPlayer)?.also { player -> player.makeMove() }
     }
 
 }

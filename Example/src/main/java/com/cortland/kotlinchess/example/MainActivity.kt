@@ -2,15 +2,14 @@ package com.cortland.kotlinchess.example
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.ViewGroup
 import com.cortland.kotlinchess.BoardLocation
 import com.cortland.kotlinchess.BoardView
-import com.cortland.kotlinchess.BoardViewListener
-import com.cortland.kotlinchess.Game
+import com.cortland.kotlinchess.Interfaces.BoardViewListener
 import kotlinx.android.synthetic.main.activity_main.*
 
 
-class MainActivity : AppCompatActivity(), BoardViewListener {
+class MainActivity : AppCompatActivity(),
+    BoardViewListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

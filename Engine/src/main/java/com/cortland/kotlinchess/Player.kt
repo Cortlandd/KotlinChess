@@ -1,5 +1,7 @@
 package com.cortland.kotlinchess
 
+import com.cortland.kotlinchess.Interfaces.PlayerListener
+
 open class Player {
 
     lateinit var color: Color
@@ -32,8 +34,8 @@ open class Player {
 
     fun occupiesSquareAt(location: BoardLocation): Boolean {
 
-        this.game.board.getPiece(location).let { piece ->
-            if (piece?.color == this.color) {
+        this.game.board.getPiece(location)?.let { piece ->
+            if (piece.color == this.color) {
                 return true
             }
         }

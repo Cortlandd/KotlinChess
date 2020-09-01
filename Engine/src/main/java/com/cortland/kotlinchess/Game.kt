@@ -1,5 +1,9 @@
 package com.cortland.kotlinchess
 
+import com.cortland.kotlinchess.AI.AIPlayer
+import com.cortland.kotlinchess.Interfaces.GameListener
+import com.cortland.kotlinchess.Interfaces.PlayerListener
+
 class Game: PlayerListener {
 
     var board = Board(state = Board.InitialState.newGame)

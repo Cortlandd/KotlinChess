@@ -42,8 +42,8 @@ open class PieceMovement {
         while (testLocation.isInBounds()) {
 
             // If there is a piece on the square
-            board.getPiece(testLocation).let { piece ->
-                if (piece!!.color == movingPiece.color) {
+            board.getPiece(testLocation)?.also { piece ->
+                if (piece.color == movingPiece.color) {
                     return false
                 }
 
