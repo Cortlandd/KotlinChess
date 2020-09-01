@@ -132,8 +132,7 @@ class PieceMovementStraightLine: PieceMovement() {
 
 open class PieceMovementDiagonal: PieceMovement() {
 
-    override open fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
-
+    override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
 
         val strides = mutableListOf(
             BoardStride(1, -1 ), // South East
@@ -155,7 +154,7 @@ open class PieceMovementQueen: PieceMovement() {
 
     var movements = mutableListOf(PieceMovementStraightLine(), PieceMovementDiagonal())
 
-    open override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+    override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
         for (pieceMovement in movements) if (pieceMovement.canPieceMove(fromLocation, toLocation, board)) return true
         return false
     }
@@ -178,7 +177,7 @@ open class PieceMovementBishop: PieceMovement() {
 
     val diagonalMovement = PieceMovementDiagonal()
 
-    override open fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+    override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
 
         return diagonalMovement.canPieceMove(fromLocation, toLocation, board)
 
@@ -260,9 +259,9 @@ class PieceMovementPawn: PieceMovement() {
 }
 
 // MARK - PieceMovementKing
-class PieceMovementKing: PieceMovement() {
+open class PieceMovementKing: PieceMovement() {
 
-    open override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+    override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
 
 
         val offsets = listOf(
