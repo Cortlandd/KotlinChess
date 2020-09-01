@@ -1,19 +1,19 @@
 package com.cortland.kotlinchess
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
+import android.view.View
 import kotlin.properties.Delegates
 
-class PieceView(piece: Piece, var location: BoardLocation, var context: Context) {
+class PieceView(piece: Piece, var location: BoardLocation, context: Context): View(context) {
 
     var piece: Piece by Delegates.observable(piece) { _, _, _ ->
         updateImage()
     }
 
-    init {
-        updateImage()
-    }
+    var hasBeenUpdated = false
 
     var mPieceImage: Drawable? = null
     var pieceSelected: Boolean = false
@@ -21,6 +21,18 @@ class PieceView(piece: Piece, var location: BoardLocation, var context: Context)
             field = value
             updateImage()
         }
+
+    override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
+
+        updateImage()
+        if (mPieceImage != null) {
+            if (canvas != null) {
+                mPieceImage!!.bounds = this.clipBounds
+                mPieceImage!!.draw(canvas)
+            }
+        }
+    }
 
     fun updateImage() {
 
@@ -43,11 +55,12 @@ class PieceView(piece: Piece, var location: BoardLocation, var context: Context)
             else -> return
         }
 
-        mPieceImage = context.getDrawable(imageName)
+        mPieceImage = this.context.getDrawable(imageName)
 
         val backgroundColor = if (pieceSelected) android.graphics.Color.RED else android.graphics.Color.TRANSPARENT
         this.mPieceImage!!.setTintMode(PorterDuff.Mode.SCREEN)
         this.mPieceImage!!.setTint(backgroundColor)
+
 
     }
 
