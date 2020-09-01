@@ -1,8 +1,9 @@
 package com.cortland.kotlinchess
 
 import android.content.Context
-import android.graphics.*
-import android.icu.util.TimeUnit
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -10,7 +11,6 @@ import com.cortland.kotlinchess.AI.AIPlayer
 import com.cortland.kotlinchess.Interfaces.BoardViewListener
 import com.cortland.kotlinchess.Interfaces.GameListener
 import java.util.*
-import java.util.concurrent.Executors
 import kotlin.collections.ArrayList
 
 class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs), GameListener {
@@ -148,7 +148,7 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
                 val pieceView = mPieceViews.first { it.location.index == i }
                 pieceView.location.setBoardLocationRect(tileRect)
             } catch (e: Exception) {
-
+                // Prints collection error
             }
 
         }
@@ -187,6 +187,33 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
         val pieceView = PieceView(piece, location, this.context)
         mPieceViews.add(pieceView)
 
+    }
+
+    fun removePiece(tag: Int) {
+        pieceViewWithTag(tag)?.also {
+            removePieceView(it)
+        }
+    }
+
+    fun removePieceView(pieceView: PieceView) {
+
+        mPieceViews.indexOf(pieceView).also { index ->
+            mPieceViews.removeAt(index)
+        }
+
+        invalidate()
+
+    }
+
+    fun pieceViewWithTag(tag: Int): PieceView? {
+
+        for (pieceView in mPieceViews) {
+            if (pieceView.piece.tag == tag) {
+                return pieceView
+            }
+        }
+
+        return null
     }
 
     fun updatePieceViewSelectedStates() {
@@ -236,7 +263,15 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
         return gridX + (gridY*8)
     }
 
+    fun tellAIToTakeGo() {
+        (game.currentPlayer as? AIPlayer)?.also { player -> player.makeMove() }
+    }
+
+    // GAME Listener
+
     override fun gameDidChangeCurrentPlayer(game: Game) {
+
+        this.selectedIndex = null
 
         (game.currentPlayer as? AIPlayer)?.let {
             Timer().schedule(object: TimerTask() {
@@ -245,12 +280,37 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
                 }
             }, 3000)
         }
-
-        this.selectedIndex = null
     }
 
-    fun tellAIToTakeGo() {
-        (game.currentPlayer as? AIPlayer)?.also { player -> player.makeMove() }
+    override fun gameWillBeginUpdates(game: Game) {
+
+    }
+
+    override fun gameDidAddPiece(game: Game) {
+
+    }
+
+    override fun gameDidRemovePiece(game: Game, piece: Piece, location: BoardLocation) {
+        val pieceView = pieceViewWithTag(piece.tag) ?: return
+
+        pieceView.mPieceImage!!.alpha = 0
+        this.removePieceView(pieceView)
+
+    }
+
+    override fun gameDidMovePiece(game: Game, piece: Piece, toLocation: BoardLocation) {
+        val pieceView = pieceViewWithTag(piece.tag) ?: return
+
+        pieceView.location = toLocation
+        invalidate()
+    }
+
+    override fun gameDidTransformPiece(game: Game) {
+
+    }
+
+    override fun gameDidEndUpdates(game: Game) {
+
     }
 
 }
