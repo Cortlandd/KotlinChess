@@ -18,7 +18,17 @@ enum class Color {
     }
 }
 
-class Piece(var type: PieceType, var color: Color) {
+data class Piece(var type: PieceType, var color: Color) {
+
+    companion object {
+        var lastAssignedTag = 0
+    }
+    val tag: Int
+
+    init {
+        Piece.lastAssignedTag += 1
+        this.tag = Piece.lastAssignedTag
+    }
 
     val movement: PieceMovement = PieceMovement.pieceMovement(this.type)
 
