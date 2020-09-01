@@ -26,11 +26,11 @@ class Piece(var type: PieceType, var color: Color) {
 
         when(type) {
             PieceType.pawn -> return 1f
-            PieceType.rook-> return 2f
+            PieceType.rook-> return 5f
             PieceType.knight-> return 3f
-            PieceType.bishop-> return 4f
-            PieceType.queen-> return 5f
-            PieceType.king-> return 6f
+            PieceType.bishop-> return 3f
+            PieceType.queen-> return 9f
+            PieceType.king-> return 0f
         }
     }
 
