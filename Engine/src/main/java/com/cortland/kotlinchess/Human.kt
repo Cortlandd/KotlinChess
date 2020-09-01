@@ -22,10 +22,10 @@ open class Human: Player {
         }
 
         // Move the piece
-        game.board.movePiece(fromLocation, toLocation)
+        val operations = game.board.movePiece(fromLocation, toLocation)
 
         // Inform Player Listener
-        playerListener?.playerDidMakeMove(this)
+        playerListener?.playerDidMakeMove(this, operations)
     }
 
 }

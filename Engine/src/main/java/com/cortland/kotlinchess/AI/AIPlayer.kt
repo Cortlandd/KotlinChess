@@ -72,8 +72,9 @@ open class AIPlayer: Player {
         print("HIGHEST MOVE RATING: $highestRating")
 
         // Make move
-        game.board.movePiece(highestRatedMove.sourceLocation, highestRatedMove.targetLocation)
-        this.game.playerDidMakeMove(this)
+        val operations = game.board.movePiece(highestRatedMove.sourceLocation, highestRatedMove.targetLocation)
+
+        this.game.playerDidMakeMove(this, operations)
 
     }
 
