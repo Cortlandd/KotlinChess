@@ -75,9 +75,25 @@ class Board {
         return squares[index].piece
     }
 
-    fun movePiece(fromLocation: BoardLocation, toLocation: BoardLocation) {
+    fun movePiece(fromLocation: BoardLocation, toLocation: BoardLocation): ArrayList<BoardOperation> {
+
+        var operations = ArrayList<BoardOperation>()
+
+        getPiece(fromLocation)?.also { piece ->
+            val operation = BoardOperation(BoardOperation.OperationType.movePiece, piece, toLocation)
+            operations.add(operation)
+        }
+
+        getPiece(toLocation)?.also { piece ->
+            val operation = BoardOperation(BoardOperation.OperationType.removePiece, piece, toLocation)
+            operations.add(operation)
+        }
+
+
         squares[toLocation.index].piece = this.squares[fromLocation.index].piece
         squares[fromLocation.index].piece = null
+
+        return operations
     }
 
     // MARK: - Get Specific pieces
