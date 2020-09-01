@@ -24,7 +24,7 @@ class Game: PlayerListener {
         this.currentPlayer = this.whitePlayer
     }
 
-    override fun playerDidMakeMove(player: Player) {
+    override fun playerDidMakeMove(player: Player, boardOperations: ArrayList<BoardOperation>) {
 
         // This shouldn't happen, but print a message in case it does
         if (player !== currentPlayer) {
@@ -38,8 +38,24 @@ class Game: PlayerListener {
             whitePlayer
         }
 
+        // Process board operations
+        processBoardOperations(boardOperations)
+
         // Inform the delegate
         this.gameListener?.gameDidChangeCurrentPlayer(this)
 
     }
+
+    fun processBoardOperations(boardOperations: ArrayList<BoardOperation>) {
+
+        for (boardOperation in boardOperations) {
+            when(boardOperation.type) {
+                BoardOperation.OperationType.movePiece -> this.gameListener?.gameDidMovePiece(this, boardOperation.piece, boardOperation.location)
+                BoardOperation.OperationType.removePiece -> this.gameListener?.gameDidMovePiece(this, boardOperation.piece, boardOperation.location)
+                BoardOperation.OperationType.transformPiece -> throw Exception("ERROR on transform piece")
+            }
+
+        }
+    }
+
 }
