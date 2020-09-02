@@ -30,11 +30,16 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
     var y0 = 0
     var squareSize = 0
 
+    // Helper to know where to set location for new piece location
+    var lastTappedRect: Rect? = null
+
     /** 'true' if black is facing player.  */
     var flipped = false
 
     init {
-        game = Game()
+        val whitePlayer = Human(Color.white)
+        val blackPlayer = Human(Color.black)
+        game = Game(whitePlayer, blackPlayer)
         game.gameListener = this
         isFocusable = true
         buildBoardLocations()
@@ -55,6 +60,8 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
 
         drawPieces(canvas)
 
+        println("pieceviews size after ondraw ${mPieceViews.count()}")
+
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -67,6 +74,8 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
             val location = mBoardLocations.find {
                 it.getBoardLocationRect().contains(x, y)
             }
+
+            lastTappedRect = location?.getBoardLocationRect()
 
             location?.index?.let { tappedPiece(it) }
 
@@ -98,14 +107,12 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
             this.selectedIndex = index
         }
 
-        this.selectedIndex?.let { selectedIndex ->
-            try {
-                player.movePiece(BoardLocation(selectedIndex), location)
-            } catch (e: Player.PieceMoveErrorException) {
-                println(e.message)
-            } catch (e: Exception) {
-                print(e.message)
-            }
+        try {
+            player.movePiece(fromLocation = BoardLocation(selectedIndex!!), toLocation = location)
+        } catch (e: Player.PieceMoveErrorException) {
+            println(e.message)
+        } catch (e: Exception) {
+            print(e.message)
         }
 
     }
@@ -146,7 +153,9 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
 
             try {
                 val pieceView = mPieceViews.first { it.location.index == i }
-                pieceView.location.setBoardLocationRect(tileRect)
+                if (!pieceView.hasBeenUpdated) {
+                    pieceView.location.setBoardLocationRect(tileRect)
+                }
             } catch (e: Exception) {
                 // Prints collection error
             }
@@ -259,6 +268,7 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
     }
 
     fun tellAIToTakeGo() {
+        println("AI MAKING MOVE")
         (game.currentPlayer as? AIPlayer)?.also { player -> player.makeMove() }
     }
 
@@ -268,6 +278,8 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
 
         this.selectedIndex = null
 
+        println("game changed player")
+
         (game.currentPlayer as? AIPlayer)?.let {
             Timer().schedule(object: TimerTask() {
                 override fun run() {
@@ -275,6 +287,14 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
                 }
             }, 3000)
         }
+    }
+
+    override fun gameWonByPlayer(game: Game, player: Player) {
+
+    }
+
+    override fun gameEndedInStaleMate(game: Game) {
+
     }
 
     override fun gameWillBeginUpdates(game: Game) {
@@ -288,15 +308,20 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
     override fun gameDidRemovePiece(game: Game, piece: Piece, location: BoardLocation) {
         val pieceView = pieceViewWithTag(piece.tag) ?: return
 
-        pieceView.mPieceImage!!.alpha = 0
-        this.removePieceView(pieceView)
+        //pieceView.mPieceImage!!.alpha = 0
+        this.removePiece(piece.tag)
 
+        println("pieceviews size after remove ${mPieceViews.count()}")
     }
 
     override fun gameDidMovePiece(game: Game, piece: Piece, toLocation: BoardLocation) {
         val pieceView = pieceViewWithTag(piece.tag) ?: return
 
         pieceView.location = toLocation
+        lastTappedRect?.let { pieceView.location.setBoardLocationRect(it) }
+        pieceView.hasBeenUpdated = true
+        lastTappedRect = null
+
         invalidate()
     }
 

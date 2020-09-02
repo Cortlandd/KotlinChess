@@ -72,7 +72,9 @@ open class Player {
         val inCheckBeforeMove = this.game.board.isColorInCheck(this.color)
 
         val board = this.game.board
-        board.movePiece(fromLocation, toLocation)
+
+        // TODO: Look back at this
+        //board.movePiece(fromLocation, toLocation)
         val inCheckAfterMove = board.isColorInCheck(this.color)
 
         if (inCheckBeforeMove && inCheckAfterMove) {

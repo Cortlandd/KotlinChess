@@ -2,9 +2,8 @@ package com.cortland.kotlinchess
 
 open class Human: Player {
 
-    constructor(color: Color, game: Game) {
+    constructor(color: Color) {
         this.color = color
-        this.game = game
     }
 
     @Throws(PieceMoveErrorException::class)

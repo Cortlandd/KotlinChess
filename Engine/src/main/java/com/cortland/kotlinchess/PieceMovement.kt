@@ -279,7 +279,9 @@ open class PieceMovementKing: PieceMovement() {
 
             val offsetLocation = fromLocation.incrementedBy(offset.first, offset.second)
 
-            if (toLocation == offsetLocation && canPieceOccupySquare(fromLocation, offset.first, offset.second, board)) {
+            if (toLocation == offsetLocation
+                    && offsetLocation.isInBounds()
+                    && canPieceOccupySquare(fromLocation, offset.first, offset.second, board)) {
                 return true
             }
         }

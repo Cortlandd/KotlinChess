@@ -1,5 +1,7 @@
 package com.cortland.kotlinchess
 
+import android.util.Log
+
 class Square {
 
     var piece: Piece? = null
@@ -8,7 +10,9 @@ class Square {
 
 class Board {
 
-    var squares: ArrayList<Square> = ArrayList()
+    val TAG = Board::class.java.simpleName
+
+    var squares: MutableList<Square> = mutableListOf<Square>()
 
     enum class InitialState {
         empty, newGame
@@ -28,7 +32,7 @@ class Board {
 
     fun setupForNewGame() {
 
-        println("SETUP FOR NEW GAME")
+        Log.d(TAG, "SETUP FOR NEW GAME")
 
         // Setup white bottom row
         squares[0].piece = Piece(type = PieceType.rook, color = Color.white)
@@ -75,17 +79,19 @@ class Board {
         return squares[index].piece
     }
 
-    fun movePiece(fromLocation: BoardLocation, toLocation: BoardLocation): ArrayList<BoardOperation> {
+    internal fun movePiece(fromLocation: BoardLocation, toLocation: BoardLocation): ArrayList<BoardOperation> {
 
         var operations = ArrayList<BoardOperation>()
 
-        getPiece(fromLocation)?.also { piece ->
-            val operation = BoardOperation(BoardOperation.OperationType.movePiece, piece, toLocation)
+        val movingPiece = getPiece(fromLocation)
+        if (movingPiece != null) {
+            val operation = BoardOperation(BoardOperation.OperationType.movePiece, movingPiece, toLocation)
             operations.add(operation)
         }
 
-        getPiece(toLocation)?.also { piece ->
-            val operation = BoardOperation(BoardOperation.OperationType.removePiece, piece, toLocation)
+        val targetPiece = getPiece(toLocation)
+        if (targetPiece != null) {
+            val operation = BoardOperation(BoardOperation.OperationType.removePiece, targetPiece, toLocation)
             operations.add(operation)
         }
 
@@ -165,6 +171,36 @@ class Board {
 
     }
 
+    fun isColorInStalemate(color: Color): Boolean {
+        return !isColorAbleToMove(color) && !isColorInCheckMate(color)
+    }
+
+    fun isColorAbleToMove(color: Color): Boolean {
+
+        for (pieceLocation in getLocationsOfColor(color)) {
+
+            val piece = getPiece(pieceLocation) ?: continue
+
+            val boardLocations = BoardLocation.all()
+            for (targetLocation in boardLocations) {
+
+                val canMove = piece.movement.canPieceMove(pieceLocation, targetLocation, this)
+
+                if (!canMove) {
+                    continue
+                }
+
+                var resultBoard = this
+                resultBoard.movePiece(pieceLocation, targetLocation)
+                if (!resultBoard.isColorInCheck(color)) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
     // MARK: - Check / Check mate state
 
     fun isColorInCheck(color: Color): Boolean {
@@ -185,6 +221,10 @@ class Board {
     }
 
     fun isColorInCheckMate(color: Color): Boolean {
+
+        if (!isColorInCheck(color)) {
+            return false
+        }
 
         for (pieceLocation in getLocationsOfColor(color)) {
 

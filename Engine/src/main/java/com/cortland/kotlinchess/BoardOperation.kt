@@ -1,11 +1,21 @@
 package com.cortland.kotlinchess
 
-data class BoardOperation(internal val type: OperationType, internal val piece: Piece, internal val location: BoardLocation) {
+class BoardOperation {
 
-    enum class OperationType {
+    internal enum class OperationType {
         movePiece,
         removePiece,
         transformPiece;
+    }
+
+    internal var type: OperationType
+    internal var piece: Piece
+    internal var location: BoardLocation
+
+    internal constructor(type: OperationType, piece: Piece, location: BoardLocation) {
+        this.type = type
+        this.piece = piece
+        this.location = location
     }
 
 }

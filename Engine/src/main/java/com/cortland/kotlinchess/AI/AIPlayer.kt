@@ -11,9 +11,8 @@ open class AIPlayer: Player {
 
     var boardRaters: ArrayList<BoardRater> = arrayListOf(BoardRaterCountPieces)
 
-    constructor(color: Color, game: Game) {
+    constructor(color: Color) {
         this.color = color
-        this.game = game
     }
 
     fun makeMove() {

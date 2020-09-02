@@ -16,6 +16,10 @@ enum class Color {
     fun opposite(): Color {
         return if (this == white) black else white
     }
+
+    override fun toString(): String {
+        return if (this == white) "white" else "black"
+    }
 }
 
 data class Piece(var type: PieceType, var color: Color) {
