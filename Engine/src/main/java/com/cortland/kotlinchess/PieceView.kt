@@ -6,6 +6,7 @@ import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.view.View
 import kotlin.properties.Delegates
+import com.cortland.kotlinchess.Piece.PieceType.*
 
 class PieceView(piece: Piece, var location: BoardLocation, context: Context): View(context) {
 
@@ -40,18 +41,18 @@ class PieceView(piece: Piece, var location: BoardLocation, context: Context): Vi
 
         imageName =
             when(Pair(piece.type, piece.color)) {
-                Pair(PieceType.rook, Color.white) -> R.drawable.whiterook
-                Pair(PieceType.pawn, Color.white) -> R.drawable.whitepawn
-                Pair(PieceType.knight, Color.white) -> R.drawable.whiteknight
-                Pair(PieceType.king, Color.white) -> R.drawable.whiteking
-                Pair(PieceType.queen, Color.white) -> R.drawable.whitequeen
-                Pair(PieceType.bishop, Color.white) -> R.drawable.whitebishop
-                Pair(PieceType.rook, Color.black) -> R.drawable.blackrook
-                Pair(PieceType.pawn, Color.black) -> R.drawable.blackpawn
-                Pair(PieceType.knight, Color.black) -> R.drawable.blackknight
-                Pair(PieceType.king, Color.black) -> R.drawable.blackking
-                Pair(PieceType.queen, Color.black) -> R.drawable.blackqueen
-                Pair(PieceType.bishop, Color.black) -> R.drawable.blackbishop
+                Pair(rook, Color.white) -> R.drawable.whiterook
+                Pair(pawn, Color.white) -> R.drawable.whitepawn
+                Pair(knight, Color.white) -> R.drawable.whiteknight
+                Pair(king, Color.white) -> R.drawable.whiteking
+                Pair(queen, Color.white) -> R.drawable.whitequeen
+                Pair(bishop, Color.white) -> R.drawable.whitebishop
+                Pair(rook, Color.black) -> R.drawable.blackrook
+                Pair(pawn, Color.black) -> R.drawable.blackpawn
+                Pair(knight, Color.black) -> R.drawable.blackknight
+                Pair(king, Color.black) -> R.drawable.blackking
+                Pair(queen, Color.black) -> R.drawable.blackqueen
+                Pair(bishop, Color.black) -> R.drawable.blackbishop
             else -> return
         }
 
