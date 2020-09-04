@@ -267,7 +267,7 @@ open class AIPlayer: Player {
         }
 
         // Get the ratings
-        var highestRating = Double.MIN_VALUE
+        var highestRating = Double.MAX_VALUE.unaryMinus()
         var promotedBoard: Board? = null
 
         for (pieceType in Piece.PieceType.possiblePawnPromotionResultingTypes()) {
