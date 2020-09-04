@@ -1,8 +1,8 @@
 package com.cortland.kotlinchess
 
 enum class Color(val colorName: String) {
-    white("White"),
-    black("White");
+    white("white"),
+    black("black");
 
     fun opposite(): Color {
         return if (this == white) black else white
