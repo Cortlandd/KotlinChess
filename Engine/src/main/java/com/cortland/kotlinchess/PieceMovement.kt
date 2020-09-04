@@ -1,6 +1,15 @@
 package com.cortland.kotlinchess
 
+import com.cortland.kotlinchess.Piece.*
+
 // MARK - PieceMovement (Base Class)
+
+val pawnMovement = PieceMovementPawn()
+val rookMovement = PieceMovementRook()
+val knightMovement = PieceMovementKnight()
+val bishopMovement = PieceMovementBishop()
+val queenMovement = PieceMovementQueen()
+val kingMovement = PieceMovementKing()
 
 open class PieceMovement {
 
@@ -8,37 +17,90 @@ open class PieceMovement {
 
         fun pieceMovement(pieceType: PieceType): PieceMovement {
             return when(pieceType) {
-                PieceType.pawn -> PieceMovementPawn()
-                PieceType.rook -> PieceMovementRook()
-                PieceType.knight -> PieceMovementKnight()
-                PieceType.bishop -> PieceMovementBishop()
-                PieceType.queen -> PieceMovementQueen()
-                PieceType.king -> PieceMovementKing()
+                PieceType.pawn -> pawnMovement
+                PieceType.rook -> rookMovement
+                PieceType.knight -> knightMovement
+                PieceType.bishop -> bishopMovement
+                PieceType.queen -> queenMovement
+                PieceType.king -> kingMovement
             }
         }
     }
 
-    open fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+    fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board, accountForCheckState: Boolean = false): Boolean {
+        if (fromLocation == toLocation) {
+            return false
+        }
+
+        val canMove = isMovementPossible(fromLocation, toLocation, board)
+
+        if (canMove && accountForCheckState) {
+
+            val color = board.getPiece(fromLocation)!!.color
+
+            var boardCopy = board
+            boardCopy.movePiece(fromLocation, toLocation)
+
+            return if (boardCopy.isColorInCheck(color)) false else true
+        } else {
+            return canMove
+        }
+    }
+
+    open fun isMovementPossible(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
         return false
     }
 
+    private enum class Direction {
+        increasing, decresing, none
+    }
     fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board, stride: BoardStride): Boolean {
+
+        var strideDirectionX = Direction.none
+        if (stride.x < 0) { strideDirectionX = Direction.decresing }
+        if (stride.x > 0) { strideDirectionX = Direction.increasing }
+
+        var locationDirectionX = Direction.none
+        if (toLocation.x - fromLocation.x < 0) { locationDirectionX = Direction.decresing }
+        if (toLocation.x - fromLocation.x > 0) { locationDirectionX = Direction.increasing }
+
+        if (strideDirectionX != locationDirectionX) {
+            return false
+        }
+
+        var strideDirectionY = Direction.none
+        if (stride.y < 0) { strideDirectionY = Direction.decresing }
+        if (stride.y > 0) { strideDirectionY = Direction.increasing }
+
+        var locationDirectionY = Direction.none
+        if (toLocation.y - fromLocation.y < 0) { locationDirectionY = Direction.decresing }
+        if (toLocation.y - fromLocation.y > 0) { locationDirectionY = Direction.increasing }
+
+        if (strideDirectionY != locationDirectionY) {
+            return false
+        }
+
+        // Make sure cannot take king
+        val kPiece = board.getPiece(toLocation)
+        if (kPiece != null) {
+            if (kPiece.type == PieceType.king) {
+                return false
+            }
+        }
 
         // Get the moving piece
         val movingPiece = board.getPiece(fromLocation)
-
         if (movingPiece == null) {
             print("Cannot from an index that does not contain a piece")
             return false
         }
 
         // Increment by Stride
-        if (!fromLocation.canIncrementBy(stride)) {
+        if (!fromLocation.canIncrement(stride = stride)) {
             return false
         }
 
         var testLocation = fromLocation.incrementedBy(stride)
-
         while (testLocation.isInBounds()) {
 
             // If there is a piece on the square
@@ -63,7 +125,7 @@ open class PieceMovement {
             }
 
             // Increment by stride
-            if (!testLocation.canIncrementBy(stride)) {
+            if (!testLocation.canIncrement(stride = stride)) {
                 return false
             }
             testLocation = testLocation.incrementedBy(stride)
@@ -81,7 +143,6 @@ open class PieceMovement {
             return false
         }
 
-
         // Check if wrapped
         if (targetLocation.x - pieceLocation.x != xOffset || targetLocation.y - pieceLocation.y != yOffset) {
             return false
@@ -89,7 +150,6 @@ open class PieceMovement {
 
         // Check if space is occupied
         val movingPiece = board.getPiece(pieceLocation)
-
         if (movingPiece == null) {
             print("Cannot from an index that does not contain a piece")
             return false
@@ -105,23 +165,32 @@ open class PieceMovement {
         return true
     }
 
-
 }
 
 // MARK - PieceMovementStraightLine
 
-class PieceMovementStraightLine: PieceMovement() {
+open class PieceMovementStraightLine: PieceMovement() {
 
-    override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+    val strides = mutableListOf(
+        BoardStride( 0, -1 ), // Down
+        BoardStride(0, 1 ), // Up
+        BoardStride(-1, 0 ), // Left
+        BoardStride(1, 0 )  // Right
+    )
 
-        val strides = mutableListOf(
-            BoardStride( 0, -1 ), // Down
-            BoardStride(0, 1 ), // Up
-            BoardStride(-1, 0 ), // Left
-            BoardStride(1, 0 )  // Right
-        )
+    override fun isMovementPossible(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+        val sameX = fromLocation.x == toLocation.x
+        val sameY = fromLocation.y == toLocation.y
 
-        for (stride in strides) if (canPieceMove(fromLocation, toLocation, board, stride)) return true
+        if (!(sameX || sameY)) {
+            return false
+        }
+
+        for (stride in strides) {
+            if (canPieceMove(fromLocation, toLocation, board, stride)) {
+                return true
+            }
+        }
 
         return false
     }
@@ -132,16 +201,23 @@ class PieceMovementStraightLine: PieceMovement() {
 
 open class PieceMovementDiagonal: PieceMovement() {
 
-    override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+    val strides = mutableListOf(
+        BoardStride(1, -1 ), // South East
+        BoardStride(-1, -1 ), // South West
+        BoardStride(1, 1 ), // North East
+        BoardStride(-1, 1 )  // North West
+    )
 
-        val strides = mutableListOf(
-            BoardStride(1, -1 ), // South East
-            BoardStride(-1, -1 ), // South West
-            BoardStride(1, 1 ), // North East
-            BoardStride(-1, 1 )  // North West
-        )
+    override fun isMovementPossible(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+        if (fromLocation.isDarkSquare != toLocation.isDarkSquare) {
+            return false
+        }
 
-        for (stride in strides) if (canPieceMove(fromLocation, toLocation, board, stride)) return true
+        for (stride in strides) {
+            if (canPieceMove(fromLocation, toLocation, board, stride)) {
+                return true
+            }
+        }
 
         return false
     }
@@ -154,10 +230,17 @@ open class PieceMovementQueen: PieceMovement() {
 
     var movements = mutableListOf(PieceMovementStraightLine(), PieceMovementDiagonal())
 
-    override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
-        for (pieceMovement in movements) if (pieceMovement.canPieceMove(fromLocation, toLocation, board)) return true
+    override fun isMovementPossible(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+        for (pieceMovement in movements) {
+
+            if (pieceMovement.canPieceMove(fromLocation, toLocation, board)) {
+                return true
+            }
+        }
+
         return false
     }
+
 }
 
 // MARK: - PieceMovementRook
@@ -166,7 +249,7 @@ open class PieceMovementRook: PieceMovement() {
 
     val straightLineMovement = PieceMovementStraightLine()
 
-    fun isMovementPossible(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+    override fun isMovementPossible(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
         return straightLineMovement.canPieceMove(fromLocation, toLocation, board)
     }
 }
@@ -177,35 +260,41 @@ open class PieceMovementBishop: PieceMovement() {
 
     val diagonalMovement = PieceMovementDiagonal()
 
-    override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
-
+    override fun isMovementPossible(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
         return diagonalMovement.canPieceMove(fromLocation, toLocation, board)
-
-        //return false
-
     }
+
 }
 
 // MARK - PieceMovementKnight
 
 class PieceMovementKnight: PieceMovement() {
 
-    override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+    var offsets = listOf(
+        Pair(1,2),
+        Pair(2,1),
+        Pair(2,-1),
+        Pair(-2,1),
+        Pair(-1,-2),
+        Pair(-2,-1),
+        Pair(1,-2),
+        Pair(-1,2)
+    )
 
-        var offsets = listOf(
-            Pair(1,2),
-            Pair(2,1),
-            Pair(2,-1),
-            Pair(-2,1),
-            Pair(-1,-2),
-            Pair(-2,-1),
-            Pair(1,-2),
-            Pair(-1,2)
-        )
+    override fun isMovementPossible(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+        // Make sure cannot take king
+        val piece = board.getPiece(toLocation)
+        if (piece != null) {
+            if (piece.type == PieceType.king) {
+                return false
+            }
+        }
 
         for (offset in offsets) {
             val offsetLocation = fromLocation.incrementedBy(offset.first, offset.second)
-            if (toLocation == offsetLocation && canPieceOccupySquare(fromLocation, offset.first, offset.second, board)) return true
+            if (toLocation == offsetLocation && canPieceOccupySquare(fromLocation, offset.first, offset.second, board)) {
+                return true
+            }
         }
 
         return false
@@ -216,72 +305,163 @@ class PieceMovementKnight: PieceMovement() {
 // MARK - PieceMovementPawn
 class PieceMovementPawn: PieceMovement() {
 
-    override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+    override fun isMovementPossible(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+        // Get the moving piece
+        val movingPiece = board.getPiece(fromLocation) ?: return false
 
-        val movingPiece = board.getPiece(fromLocation)
-
-        if (movingPiece == null) {
-            print("Cannot from an index that does not contain a piece")
+        if (movingPiece.color == Color.white && toLocation.y == 0) {
             return false
         }
 
-        val offsets = ArrayList<Pair<Int, Int>>()
+        if (movingPiece.color == Color.black && toLocation.y == 7) {
+            return false
+        }
+
+        // Make sure cannot take king
+        val kPiece = board.getPiece(toLocation)
+        if (kPiece != null) {
+            if (kPiece.type == PieceType.king) {
+                return false
+            }
+        }
 
         val color = movingPiece.color
 
-        // Add one ahead offset
-        if (color == Color.white) {
-            offsets.add(Pair(0,1))
-        }
-        else {
-            offsets.add(Pair(0,-1))
-        }
+        // ****** Test forward locations ******
 
-        // Add the two ahead offset
-        if (color == Color.white && fromLocation.y == 1) {
-            offsets.add(Pair(0,2))
-        }
-        else if (color == Color.black && fromLocation.y == 6) {
-            offsets.add(Pair(0,-2))
-        }
+        // Test one ahead offset
+        val oneAheadStride = if (color == Color.white) BoardStride(0, 1) else BoardStride(0, -1)
+        var canMoveOneAhead = true
 
-        for (offset in offsets) {
+        fromLocation.canIncrement(oneAheadStride).also {
 
-            val offsetLocation = fromLocation.incrementedBy(offset.first, offset.second)
+            val location = fromLocation.incremented(oneAheadStride)
 
-            if (toLocation == offsetLocation && canPieceOccupySquare(fromLocation, offset.first, offset.second, board)) {
+            if (board.getPiece(location) != null) {
+                canMoveOneAhead = false
+                return@also
+            }
+
+            if (location == toLocation) {
                 return true
             }
         }
 
+        // Test two ahead offset
+        if (canMoveOneAhead) {
+
+            var twoAheadStride: BoardStride? = null
+
+            if (color == Color.white && fromLocation.y == 1) {
+                twoAheadStride = BoardStride(0, 2)
+            } else if (color == Color.black && fromLocation.y == 6) {
+                twoAheadStride = BoardStride(0, -2)
+            }
+
+            twoAheadStride.let {
+                if (it != null) {
+                    val twoAheadLocation = fromLocation.incremented(it)
+
+                    if (toLocation != twoAheadLocation) {
+                        return@let
+                    }
+
+                    if (board.getPiece(twoAheadLocation) == null) {
+                        return true
+                    }
+                }
+            }
+
+        }
+
+        // ****** Test Diagonal locations ******
+        var diagonalStrides = ArrayList<BoardStride>()
+
+        if (color == Color.white) {
+            diagonalStrides.add( BoardStride(-1, 1))
+            diagonalStrides.add( BoardStride(1, 1))
+        } else {
+            diagonalStrides.add( BoardStride(-1, -1))
+            diagonalStrides.add( BoardStride(1, -1))
+        }
+
+        for (stride in diagonalStrides) {
+
+            if (!fromLocation.canIncrement(stride)) {
+                continue
+            }
+
+            val location = fromLocation.incremented(stride = stride)
+
+            if (location != toLocation) {
+                continue
+            }
+
+            // If the target square has an opponent piece
+            val piece = board.getPiece(location)
+            if (piece != null) {
+                if (piece.color == color.opposite()) {
+                    return true
+                }
+            }
+
+            // If can make en passent move
+            val enPassentStride = BoardStride(stride.x, 0)
+
+            if (!fromLocation.canIncrement(enPassentStride)) {
+                break
+            }
+
+            val enPassentLocation = fromLocation.incremented(enPassentStride)
+
+            val passingPiece = board.getPiece(enPassentLocation)
+            if (passingPiece == null) {
+                break
+            }
+
+            if (passingPiece.canBeTakenByEnPassant && passingPiece.color == color.opposite()) {
+                return true
+            }
+
+        }
+
         return false
     }
+
 }
 
 // MARK - PieceMovementKing
 open class PieceMovementKing: PieceMovement() {
 
-    override fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
+    val offsets = listOf(
+        Pair(0,1), // North
+        Pair(1,1), // North-East
+        Pair(1,0), // East
+        Pair(1,-1), // South-East
+        Pair(0,-1), // South
+        Pair(-1,-1), // South-West
+        Pair(-1,0), // West
+        Pair(-1,1) // North- West
+    )
 
+    override fun isMovementPossible(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
 
-        val offsets = listOf(
-            Pair(0,1), // North
-            Pair(1,1), // North-East
-            Pair(1,0), // East
-            Pair(1,-1), // South-East
-            Pair(0,-1), // South
-            Pair(-1,-1), // South-West
-            Pair(-1,0), // West
-            Pair(-1,1) // North- West
-        )
+        // Make sure cannot take king
+        val piece = board.getPiece(toLocation)
+        if (piece != null) {
+            if (piece.type == PieceType.king) {
+                return false
+            }
+        }
 
         for (offset in offsets) {
 
             val offsetLocation = fromLocation.incrementedBy(offset.first, offset.second)
 
             if (toLocation == offsetLocation
-                    && offsetLocation.isInBounds()
-                    && canPieceOccupySquare(fromLocation, offset.first, offset.second, board)) {
+                && offsetLocation.isInBounds()
+                && canPieceOccupySquare(fromLocation, offset.first, offset.second, board)) {
+
                 return true
             }
         }

@@ -3,20 +3,21 @@ package com.cortland.kotlinchess.AI
 import com.cortland.kotlinchess.Board
 import com.cortland.kotlinchess.Color
 
-object BoardRaterCountPieces: BoardRater {
+class BoardRaterCountPieces(configuration: AIConfiguration) : BoardRater(configuration) {
 
-    override fun ratingfor(board: Board, color: Color): Float {
-        var rating: Float = 0f
+    override fun ratingFor(board: Board, color: Color): Double {
+
+        var rating: Double = 0.toDouble()
+
         for (square in board.squares) {
+
             val piece = square.piece ?: continue
 
-            if (piece.color == color) {
-                rating += piece.value()
-            } else {
-                rating += piece.value().unaryMinus()
-            }
+            rating += if (piece.color == color) piece.value else piece.value.unaryMinus()
         }
-        return rating
+
+        return rating * configuration.boardRaterCountPiecesWeighting.value
+
     }
 
 }

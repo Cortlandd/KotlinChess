@@ -1,6 +1,10 @@
 package com.cortland.kotlinchess
 
 import android.util.Log
+import com.cortland.kotlinchess.Piece.PieceType
+import com.cortland.kotlinchess.Piece.PieceType.*
+import kotlin.math.max
+import kotlin.math.min
 
 class Square {
 
@@ -13,12 +17,18 @@ class Board {
     val TAG = Board::class.java.simpleName
 
     var squares: MutableList<Square> = mutableListOf<Square>()
+        set(value) {
+            field = value
+        }
+
+    private var lastAssignedPieceTag = 0
 
     enum class InitialState {
         empty, newGame
     }
 
     constructor(state: InitialState) {
+        println("BOARD CONSTRUCTOR CALLED")
         // Setup squares
         (0..63).forEach {
             squares.add(Square())
@@ -34,34 +44,32 @@ class Board {
 
         Log.d(TAG, "SETUP FOR NEW GAME")
 
+        val pieces: ArrayList<Piece.PieceType> = arrayListOf(rook, knight, bishop, queen,
+            king, bishop, knight, rook)
+
+        fun makePiece(type: Piece.PieceType, color: Color): Piece {
+            lastAssignedPieceTag += 1
+            return Piece(type, color, lastAssignedPieceTag)
+        }
+
         // Setup white bottom row
-        squares[0].piece = Piece(type = PieceType.rook, color = Color.white)
-        squares[1].piece = Piece(type = PieceType.knight, color = Color.white)
-        squares[2].piece = Piece(type = PieceType.bishop, color = Color.white)
-        squares[3].piece = Piece(type = PieceType.queen, color = Color.white)
-        squares[4].piece = Piece(type = PieceType.king, color = Color.white)
-        squares[5].piece = Piece(type = PieceType.bishop, color = Color.white)
-        squares[6].piece = Piece(type = PieceType.knight, color = Color.white)
-        squares[7].piece = Piece(type = PieceType.rook, color = Color.white)
+        for (i in 0..7) {
+            setPiece(makePiece(pieces[i], Color.white), BoardLocation(i))
+        }
 
         // Setup white pawn row
         for (i in 8..15) {
-            squares[i].piece = Piece(type = PieceType.pawn, color = Color.white)
+            setPiece(makePiece(pawn, Color.white), BoardLocation(i))
         }
 
         // Setup black bottom row
-        squares[63].piece = Piece(type = PieceType.rook, color = Color.black)
-        squares[62].piece = Piece(type = PieceType.knight, color = Color.black)
-        squares[61].piece = Piece(type = PieceType.bishop, color = Color.black)
-        squares[60].piece = Piece(type = PieceType.queen, color = Color.black)
-        squares[59].piece = Piece(type = PieceType.king, color = Color.black)
-        squares[58].piece = Piece(type = PieceType.bishop, color = Color.black)
-        squares[57].piece = Piece(type = PieceType.knight, color = Color.black)
-        squares[56].piece = Piece(type = PieceType.rook, color = Color.black)
+        for (i in 56..63) {
+            setPiece(makePiece(pieces[i-56], Color.black), BoardLocation(i))
+        }
 
         // Setup black pawn row
         for (i in 48..55) {
-            squares[i].piece = Piece(type = PieceType.pawn, color = Color.black)
+            setPiece(makePiece(pawn, Color.black), BoardLocation(i))
         }
     }
 
@@ -69,37 +77,80 @@ class Board {
 
     fun setPiece(piece: Piece, location: BoardLocation) {
         squares[location.index].piece = piece
+        squares[location.index].piece?.location = location
     }
 
     fun getPiece(location: BoardLocation): Piece? {
         return squares[location.index].piece
     }
 
-    fun pieceAtIndex(index: Int): Piece? {
-        return squares[index].piece
+    fun removePiece(location: BoardLocation) {
+        squares[location.index].piece = null
     }
 
     internal fun movePiece(fromLocation: BoardLocation, toLocation: BoardLocation): ArrayList<BoardOperation> {
 
+        if (toLocation == fromLocation) {
+            return ArrayList(0)
+        }
+
         var operations = ArrayList<BoardOperation>()
 
-        val movingPiece = getPiece(fromLocation)
-        if (movingPiece != null) {
-            val operation = BoardOperation(BoardOperation.OperationType.movePiece, movingPiece, toLocation)
-            operations.add(operation)
-        }
+        val movingPiece = getPiece(fromLocation) ?: throw Exception("There is no piece on at (${fromLocation.x}, ${fromLocation.y})")
 
+        val operation = BoardOperation(BoardOperation.OperationType.movePiece, movingPiece, toLocation)
+        operations.add(operation)
+        
         val targetPiece = getPiece(toLocation)
         if (targetPiece != null) {
-            val operation = BoardOperation(BoardOperation.OperationType.removePiece, targetPiece, toLocation)
-            operations.add(operation)
+            val op = BoardOperation(BoardOperation.OperationType.removePiece, targetPiece, toLocation)
+            operations.add(op)
+        }
+
+        squares[toLocation.index].piece = this.squares[fromLocation.index].piece
+        squares[toLocation.index].piece?.location = toLocation
+        squares[toLocation.index].piece?.hasMoved = true
+        squares[fromLocation.index].piece = null
+
+        // If the moving piece is a pawn, check whether it just made an en passent move, and remove the passed piece
+        (movingPiece.type == pawn).also {
+            val stride = fromLocation.strideTo(toLocation)
+            val enPassentStride = BoardStride(stride.x, 0)
+            val enPassentLocation = fromLocation.incrementedBy(enPassentStride)
+
+            val enPassentPiece = getPiece(enPassentLocation) ?: return@also
+
+            if (enPassentPiece.canBeTakenByEnPassant && enPassentPiece.color == movingPiece.color.opposite()) {
+                squares[enPassentLocation.index].piece = null
+                val op = BoardOperation(BoardOperation.OperationType.removePiece, enPassentPiece, enPassentLocation)
+                operations.add(op)
+            }
         }
 
 
-        squares[toLocation.index].piece = this.squares[fromLocation.index].piece
-        squares[fromLocation.index].piece = null
+        // Reset en passant flags
+        resetEnPassantFlags()
+
+        // If pawn has moved two squares, then need to update the en passant flag
+        if (movingPiece.type == pawn) {
+
+            val startingRow = if (movingPiece.color == Color.white) 1 else 6
+            val twoAheadRow = if (movingPiece.color == Color.white) 3 else 4
+
+            if (fromLocation.y == startingRow && toLocation.y == twoAheadRow) {
+                squares[toLocation.index].piece?.canBeTakenByEnPassant = true
+            }
+        }
 
         return operations
+
+    }
+
+    fun resetEnPassantFlags() {
+
+        for (i in 0 until squares.count()) {
+            squares[i].piece?.canBeTakenByEnPassant = false
+        }
     }
 
     // MARK: - Get Specific pieces
@@ -128,7 +179,7 @@ class Board {
 
             val piece = square.piece ?: continue
 
-            if (piece.color == color && piece.type == PieceType.king) {
+            if (piece.color == color && piece.type == king) {
                 return BoardLocation(index)
             }
         }
@@ -161,7 +212,6 @@ class Board {
 
             val piece = square.piece ?: continue
 
-
             if (piece.color == color) {
                 pieces.add(piece)
             }
@@ -169,6 +219,43 @@ class Board {
 
         return pieces
 
+    }
+
+    // MARK: - Possession
+
+    fun canColorMoveAnyPieceToLocation(color: Color, location: BoardLocation): Boolean {
+
+        for ((index, square) in squares.withIndex()) {
+
+            val piece = square.piece ?: continue
+            if (piece.color != color) { continue }
+
+            if (piece.movement.canPieceMove(BoardLocation(index), location, this)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    fun doesColorOccupyLocation(color: Color, location: BoardLocation): Boolean {
+        val piece = getPiece(location) ?: return false
+        return (if (piece.color == color) true else false)
+    }
+
+    fun possibleMoveLocationsForPiece(location: BoardLocation): ArrayList<BoardLocation> {
+
+        val piece = squares[location.index].piece ?: return arrayListOf()
+
+        var locations = ArrayList<BoardLocation>()
+
+        BoardLocation.all().forEach {
+            if (piece.movement.canPieceMove(location, it, this)) {
+                locations.add(it)
+            }
+        }
+
+        return locations
     }
 
     fun isColorInStalemate(color: Color): Boolean {
@@ -247,6 +334,109 @@ class Board {
         return true
     }
 
+    fun canColorCastle(color: Color, side: CastleSide): Boolean {
+
+        // Get the correct castle move
+        val castleMove = CastleMove(color, side)
+
+        // Get the pieces
+        val kingPiece = getPiece(castleMove.kingStartLocation()) ?: return false
+        val rookPiece = getPiece(castleMove.rookStartLocation()) ?: return false
+
+        // Check that the pieces are of the correct types
+        if (kingPiece.type != king) {
+            return false
+        }
+
+        if (rookPiece.type != rook) {
+            return false
+        }
+
+        // Check that neither of the pieces have moved yet
+        if (kingPiece.hasMoved == true || rookPiece.hasMoved == true) {
+            return false
+        }
+
+        // Check that there are no pieces between the king and the rook
+        val rStart = min(castleMove.kingStartXPos, castleMove.rookStartXPos)
+        val rEnd = max(castleMove.kingStartXPos, castleMove.rookStartXPos)
+
+        // TODO: come back and look at
+        // original: for xPos in rStart..<rEnd
+        for (xPos in rStart until rEnd) {
+
+            if (xPos == castleMove.kingStartXPos || xPos == castleMove.rookStartXPos) {
+                continue
+            }
+
+            val location = BoardLocation(xPos, castleMove.yPos)
+
+            if (getPiece(location) != null) {
+                return false
+            }
+
+        }
+
+        // Check that king is not currently in check
+        if (isColorInCheck(color)) {
+            return false
+        }
+
+        // Check that the king will not end up in, or move through check
+        val kStart = min(castleMove.kingEndXPos, castleMove.kingStartXPos)
+        val kEnd = max(castleMove.kingEndXPos, castleMove.kingStartXPos)
+        for (xPos in kStart..kEnd) {
+
+            if (xPos == castleMove.kingStartXPos) {
+                continue
+            }
+
+            var newBoard = this
+            val newLocation = BoardLocation(xPos, castleMove.yPos)
+            newBoard.movePiece(castleMove.kingStartLocation(), newLocation)
+            if (newBoard.isColorInCheck(color)) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    // TODO: Original: @discardableResult internal mutating func performCastle(color: Color, side: CastleSide) -> [BoardOperation] {
+    internal fun performCastle(color: Color, side: CastleSide): List<BoardOperation> {
+
+        assert(canColorCastle(color, side) == true, {
+            "$color is unable to castle on side $side. Call canColorCastle(color: side:) first"
+        })
+
+        val castleMove = CastleMove(color, side)
+
+        val moveKingOperations = this.movePiece(castleMove.kingStartLocation(), castleMove.kingEndLocation())
+        val moveRookOperations = this.movePiece(castleMove.rookStartLocation(), castleMove.rookEndLocation())
+
+        return moveKingOperations + moveRookOperations
+    }
+
+    fun getLocationsOfPromotablePawns(color: Color): ArrayList<BoardLocation> {
+
+        var promotablePawnLocations = ArrayList<BoardLocation>()
+
+        val y: Int = if (color == Color.white) 7 else 0
+
+        for (x in 0..7) {
+
+            val location = BoardLocation(x, y)
+
+            val piece = this.getPiece(location) ?: continue
+
+            if (piece.color == color && piece.type == pawn) {
+                promotablePawnLocations.add(location)
+            }
+        }
+
+        return promotablePawnLocations
+    }
+
     fun printBoardColors() {
 
         printBoard { square ->
@@ -265,12 +455,12 @@ class Board {
             val piece = square.piece
 
             when (piece?.type) {
-                PieceType.pawn -> character = 'P'
-                PieceType.rook -> character = 'R'
-                PieceType.knight -> character = 'N'
-                PieceType.bishop -> character = 'B'
-                PieceType.queen -> character = 'Q'
-                PieceType.king -> character = 'K'
+                pawn -> character = 'P'
+                rook -> character = 'R'
+                knight -> character = 'N'
+                bishop -> character = 'B'
+                queen -> character = 'Q'
+                king -> character = 'K'
             }
 
             character
@@ -285,22 +475,22 @@ class Board {
             var piece = square.piece
 
             when(piece?.type) {
-                PieceType.pawn -> {
+                pawn -> {
                     character = if (piece.color == Color.white) 'P' else 'p'
                 }
-                PieceType.rook -> {
+                rook -> {
                     character = if (piece.color == Color.white) 'R' else 'r'
                 }
-                PieceType.knight -> {
+                knight -> {
                     character = if (piece.color == Color.white) 'N' else 'n'
                 }
-                PieceType.bishop -> {
+                bishop -> {
                     character = if (piece.color == Color.white) 'B' else 'b'
                 }
-                PieceType.queen -> {
+                queen -> {
                     character = if (piece.color == Color.white) 'Q' else 'q'
                 }
-                PieceType.king -> {
+                king -> {
                     character = if (piece.color == Color.white) 'K' else 'k'
                 }
                 null -> {
@@ -312,8 +502,6 @@ class Board {
         }
 
     }
-
-
 
     fun printBoard(squarePrinter: (Square) -> Char?) {
 

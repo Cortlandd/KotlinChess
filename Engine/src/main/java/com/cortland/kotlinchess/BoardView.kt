@@ -7,6 +7,7 @@ import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import com.cortland.kotlinchess.AI.AIConfiguration
 import com.cortland.kotlinchess.AI.AIPlayer
 import com.cortland.kotlinchess.Interfaces.BoardViewListener
 import com.cortland.kotlinchess.Interfaces.GameListener
@@ -38,7 +39,7 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
 
     init {
         val whitePlayer = Human(Color.white)
-        val blackPlayer = Human(Color.black)
+        val blackPlayer = AIPlayer(Color.black, configuration = AIConfiguration(AIConfiguration.Difficulty.hard))
         game = Game(whitePlayer, blackPlayer)
         game.gameListener = this
         isFocusable = true
@@ -88,7 +89,7 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
 
         println("TAPPED ${getAlgebraicPosition(index)}")
 
-        val player = (this.game.currentPlayer as Human) ?: return
+        val player = (this.game.currentPlayer as? Human) ?: return
 
         val location = BoardLocation(index)
 
@@ -103,7 +104,7 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
             print(e)
         }
 
-        if (this.game.currentPlayer.occupiesSquareAt(location)) {
+        if (player.occupiesSquareAt(location)) {
             this.selectedIndex = index
         }
 
@@ -112,7 +113,7 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
         } catch (e: Player.PieceMoveErrorException) {
             println(e.message)
         } catch (e: Exception) {
-            print(e.message)
+            println("something went wrong")
         }
 
     }
@@ -269,13 +270,13 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
 
     fun tellAIToTakeGo() {
         println("AI MAKING MOVE")
-        (game.currentPlayer as? AIPlayer)?.also { player -> player.makeMove() }
+        (game.currentPlayer as? AIPlayer)?.also { player -> player.makeMoveAsync() }
     }
 
     // GAME Listener
 
     override fun gameDidChangeCurrentPlayer(game: Game) {
-
+        println(javaClass.enclosingMethod?.name)
         this.selectedIndex = null
 
         println("game changed player")
@@ -285,7 +286,7 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
                 override fun run() {
                     tellAIToTakeGo()
                 }
-            }, 3000)
+            }, 2000)
         }
     }
 
@@ -325,11 +326,26 @@ class BoardView(context: Context?, attrs: AttributeSet?) : View(context, attrs),
         invalidate()
     }
 
-    override fun gameDidTransformPiece(game: Game) {
+    override fun gameDidTransformPiece(game: Game, piece: Piece, toLocation: BoardLocation) {
+        println(javaClass.enclosingMethod?.name)
+        val pieceView = pieceViewWithTag(piece.tag) ?: return
+
+        pieceView.piece = piece
 
     }
 
     override fun gameDidEndUpdates(game: Game) {
+        println(javaClass.enclosingMethod?.name)
+    }
+
+    override fun promotedTypeForPawn(
+        location: BoardLocation,
+        player: Human,
+        possiblePromotions: ArrayList<Piece.PieceType>,
+        callback: (Piece.PieceType) -> Unit
+    ) {
+
+        println(javaClass.enclosingMethod?.name)
 
     }
 

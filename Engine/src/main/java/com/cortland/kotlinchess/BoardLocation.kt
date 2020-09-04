@@ -79,7 +79,7 @@ class BoardLocation {
         get() =// To get the actual row, add 1 since 'row' is 0 indexed.
             (y + 1).toString()
 
-    val isDark: Boolean
+    val isDarkSquare: Boolean
         get() = (index + y) % 2 == 0
 
     fun isTouched(x: Int, y: Int): Boolean {
@@ -106,6 +106,48 @@ class BoardLocation {
         return this + BoardLocation(x, y)
     }
 
+    fun incremented(stride: BoardStride): BoardLocation {
+
+        assert(canIncrement(stride), {
+            "BoardLocation is being incremented by a stride that will result in wrapping! call canIncrementBy(stride: BoardStride) first"
+        })
+
+        return BoardLocation(x + stride.x, y + stride.y)
+    }
+
+    fun canIncrement(stride: BoardStride): Boolean {
+
+        // Check will not wrap to right
+        if (x + stride.x > 7) {
+            return false
+        }
+
+        // Check will not wrap to left
+        if (x + stride.x < 0) {
+            return false
+        }
+
+        // Check will not wrap top
+        if (y + stride.y > 7) {
+            return false
+        }
+
+        // Check will not wrap bottom
+        if (y + stride.y < 0) {
+            return false
+        }
+
+        return true
+    }
+
+    fun strideTo(location: BoardLocation): BoardStride {
+        return BoardStride(location.x - x, location.y - y)
+    }
+
+    fun strideFrom(location: BoardLocation): BoardStride {
+        return BoardStride(x - location.x, y - location.y)
+    }
+
     operator fun plus(right: BoardLocation): BoardLocation {
         return BoardLocation(this.index + right.index)
     }
@@ -117,8 +159,8 @@ class BoardLocation {
     fun incrementedBy(stride: BoardStride): BoardLocation {
 
         // TODO: for performance, we should probably only check this if we're in debug mode
-        if (canIncrementBy(stride)) {
-            assert(canIncrementBy(stride), {
+        if (canIncrement(stride = stride)) {
+            assert(canIncrement(stride = stride), {
                 "WARNING! BoardLocation is being incremented by a stride that will result in wrapping! call canIncrementBy(stride: BoardStride) first"
             })
         }
@@ -127,31 +169,6 @@ class BoardLocation {
     }
 
     operator fun BoardLocation.unaryPlus() = BoardLocation(index + index)
-
-    fun canIncrementBy(stride: BoardStride): Boolean {
-
-        // Check will not wrap to right
-        if (x + stride.x > 7) {
-            return false
-        }
-
-        // Check will not wrap to left
-        if (x + stride.x < 0)  {
-            return false
-        }
-
-        // Check will not wrap top
-        if (y + stride.y > 7)  {
-            return false
-        }
-
-        // Check will not wrap bottom
-        if (y + stride.y < 0)  {
-            return false
-        }
-
-        return true
-    }
 
     override fun toString(): String {
         val column = columnString
