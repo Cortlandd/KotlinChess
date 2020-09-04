@@ -35,9 +35,9 @@ class AIConfiguration {
         val multiplier: Double
 
         when(difficulty) {
-            Difficulty.easy -> multiplier = 0.toDouble()
-            Difficulty.medium -> multiplier = 0.5.toDouble()
-            Difficulty.hard -> multiplier = 1.toDouble()
+            Difficulty.easy -> multiplier = 0.0
+            Difficulty.medium -> multiplier = 0.5
+            Difficulty.hard -> multiplier = 1.0
         }
 
         fun makeValue(easyValue: Double, hardValue: Double): ConfigurationValue {
