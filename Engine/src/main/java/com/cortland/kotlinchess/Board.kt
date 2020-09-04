@@ -292,19 +292,42 @@ class Board {
 
     fun isColorInCheck(color: Color): Boolean {
 
-        val kingLocation = getKingLocation(color)
-        val oppositionLocations = getLocationsOfColor(color.opposite())
+        // Get the king location
+        var kingLocation: BoardLocation? = null
+
+        for (location in BoardLocation.all()) {
+
+            val piece = getPiece(location) ?: continue
+
+            if (piece.color == color && piece.type == king) {
+                kingLocation = location
+                break
+            }
+        }
+
+        // If there is no king, then return false (some tests will be run without a king)
+        if (kingLocation == null) {
+            return false
+        }
+
+        // Work out if we're in check
+        val oppositionLocations = getLocations(color.opposite())
+
+        // Pieces will not move to take the king, so change it for a pawn of the same color
+        var noKingBoard = this
+        noKingBoard.squares[kingLocation.index].piece = Piece(pawn, color)
 
         for (location in oppositionLocations) {
 
             val piece = getPiece(location) ?: continue
 
-            if (piece.movement.canPieceMove(location, kingLocation, this)) {
+            if (piece.movement.canPieceMove(location, kingLocation, noKingBoard)) {
                 return true
             }
         }
 
         return false
+
     }
 
     fun isColorInCheckMate(color: Color): Boolean {
@@ -332,6 +355,22 @@ class Board {
         }
 
         return true
+    }
+
+    fun getLocations(color: Color): ArrayList<BoardLocation> {
+
+        var locations = ArrayList<BoardLocation>()
+
+        for ((index, square) in squares.withIndex()) {
+
+            val piece = square.piece ?: continue
+
+            if (piece.color == color) {
+                locations.add(BoardLocation(index))
+            }
+        }
+
+        return locations
     }
 
     fun canColorCastle(color: Color, side: CastleSide): Boolean {
