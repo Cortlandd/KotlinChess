@@ -9,11 +9,10 @@ Kotlin Chess is a Chess Engine and Game written in Kotlin for Android. It is  la
 # Installation
 ```kotlin
 allprojects {
-	repositories {
-	  ...
-	  maven { url 'https://jitpack.io' }
-    }
+  repositories {
+    maven { url 'https://jitpack.io' }
   }
+}
 ```
 
 ```kotlin
