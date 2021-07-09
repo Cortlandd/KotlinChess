@@ -61,7 +61,7 @@ class BoardRaterThreatenedPieces(configuration: AIConfiguration) : BoardRater(co
     fun getPiecesProtecting(piece: Piece, board: Board): List<Piece> {
 
         var alteredBoard = board
-        alteredBoard.setPiece(piece.withOppositeColor(), piece.location)
+        alteredBoard.setPiece(piece.withOppositeColor, piece.location)
 
         return alteredBoard.getPieces(piece.color).filter {
             it.movement.canPieceMove(it.location, piece.location, alteredBoard, true)
@@ -78,7 +78,7 @@ class BoardRaterThreatenedPieces(configuration: AIConfiguration) : BoardRater(co
     fun isPieceProtected(piece: Piece, board: Board): Boolean {
 
         var alteredBoard = board
-        alteredBoard.setPiece(piece.withOppositeColor(), piece.location)
+        alteredBoard.setPiece(piece.withOppositeColor, piece.location)
 
         for (square in alteredBoard.squares) {
 
@@ -102,11 +102,11 @@ class BoardRaterThreatenedPieces(configuration: AIConfiguration) : BoardRater(co
 
             val squarePiece = square.piece ?: continue
 
-            if (squarePiece.color == piece.color.opposite()) {
+            if (squarePiece.color == piece.color.opposite) {
                 continue
             }
 
-            if (!(squarePiece.color == piece.color.opposite())) {
+            if (!(squarePiece.color == piece.color.opposite)) {
                 continue
             }
 
@@ -120,14 +120,14 @@ class BoardRaterThreatenedPieces(configuration: AIConfiguration) : BoardRater(co
 
     fun getPiecesThreatening(threatening_piece: Piece, board: Board): List<Piece> {
 
-        return board.getPieces(threatening_piece.color.opposite()).filter {
+        return board.getPieces(threatening_piece.color.opposite).filter {
             it.movement.canPieceMove(it.location, threatening_piece.location, board, true)
         }
     }
 
     fun getPiecesThreatenedBy(threatenedBy_piece: Piece, board: Board): List<Piece> {
 
-        return board.getPieces(threatenedBy_piece.color.opposite()).filter {
+        return board.getPieces(threatenedBy_piece.color.opposite).filter {
             threatenedBy_piece.movement.canPieceMove(threatenedBy_piece.location, it.location, board, true)
         }
     }

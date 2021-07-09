@@ -56,7 +56,7 @@ open class AIPlayer: Player {
 
     }
 
-    public fun makeMoveSync() {
+    fun makeMoveSync() {
 
         //print("\n\n****** Make Move ******");
 
@@ -166,7 +166,7 @@ open class AIPlayer: Player {
                 var rating = ratingForBoard(resultBoard)
 
                 // reduce rating if suicide
-                if (resultBoard.canColorMoveAnyPieceToLocation(color.opposite(), targetLocation)) {
+                if (resultBoard.canColorMoveAnyPieceToLocation(color.opposite, targetLocation)) {
                     rating -= (Math.abs(rating) * configuration.suicideMultipler.value)
                 }
 
@@ -243,7 +243,7 @@ open class AIPlayer: Player {
         }
 
         // If opponent is in check mate, set the maximum rating
-        if (board.isColorInCheckMate(color.opposite())) {
+        if (board.isColorInCheckMate(color.opposite)) {
             rating = Double.MAX_VALUE
         }
 

@@ -4,9 +4,8 @@ enum class Color(val colorName: String) {
     white("white"),
     black("black");
 
-    fun opposite(): Color {
-        return if (this == white) black else white
-    }
+    val opposite: Color
+        get() = if (this == white) black else white
 
     var string = {
         this.colorName.toLowerCase()
@@ -18,7 +17,7 @@ enum class Color(val colorName: String) {
 
 }
 
-data class Piece(var type: PieceType, var color: Color, var tag: Int = 0) {
+class Piece() {
 
     public enum class PieceType {
         pawn,
@@ -47,27 +46,34 @@ data class Piece(var type: PieceType, var color: Color, var tag: Int = 0) {
 
     }
 
-    var hasMoved = false
-        get() = field
-        set(value) {
-            field = value
-        }
+    lateinit var type: PieceType
+    lateinit var color: Color
+    var tag: Int = 0
+        internal set
 
-    var canBeTakenByEnPassant = false
-        get() = field
-        set(value) {
-            field = value
-        }
-
-    var location = BoardLocation(0)
-
-    fun withOppositeColor(): Piece {
-        return Piece(type, color.opposite())
+    constructor(type: PieceType, color: Color, tag: Int = 0) : this() {
+        this.type = type
+        this.color = color
+        this.tag = tag
     }
 
-    val movement: PieceMovement = PieceMovement.pieceMovement(this.type)
+    var hasMoved = false
+        internal set
 
-    var value = type.value()
+    var canBeTakenByEnPassant = false
+        internal set
+
+    var location = BoardLocation(0)
+        internal set
+
+    val withOppositeColor: Piece
+        get() = Piece(type, color.opposite)
+
+    val movement: PieceMovement
+        get() = PieceMovement.pieceMovement(this.type)
+
+    val value: Double
+        get() = type.value()
 
     fun byChangingType(newType: PieceType): Piece {
         return Piece(newType, color, tag)

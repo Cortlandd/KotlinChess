@@ -12,14 +12,12 @@ class Square {
 
 }
 
-class Board {
+class Board(state: InitialState) {
 
     val TAG = Board::class.java.simpleName
 
     var squares: MutableList<Square> = mutableListOf<Square>()
-        set(value) {
-            field = value
-        }
+        private set
 
     private var lastAssignedPieceTag = 0
 
@@ -27,8 +25,7 @@ class Board {
         empty, newGame
     }
 
-    constructor(state: InitialState) {
-        println("BOARD CONSTRUCTOR CALLED")
+    init {
         // Setup squares
         (0..63).forEach {
             squares.add(Square())
@@ -42,10 +39,7 @@ class Board {
 
     fun setupForNewGame() {
 
-        Log.d(TAG, "SETUP FOR NEW GAME")
-
-        val pieces: ArrayList<Piece.PieceType> = arrayListOf(rook, knight, bishop, queen,
-            king, bishop, knight, rook)
+        val pieces = listOf(rook, knight, bishop, queen, king, bishop, knight, rook)
 
         fun makePiece(type: Piece.PieceType, color: Color): Piece {
             lastAssignedPieceTag += 1
@@ -64,7 +58,7 @@ class Board {
 
         // Setup black bottom row
         for (i in 56..63) {
-            setPiece(makePiece(pieces[i-56], Color.black), BoardLocation(i))
+            setPiece(makePiece(pieces[i.minus(56)], Color.black), BoardLocation(i))
         }
 
         // Setup black pawn row
@@ -120,7 +114,7 @@ class Board {
 
             val enPassentPiece = getPiece(enPassentLocation) ?: return@also
 
-            if (enPassentPiece.canBeTakenByEnPassant && enPassentPiece.color == movingPiece.color.opposite()) {
+            if (enPassentPiece.canBeTakenByEnPassant && enPassentPiece.color == movingPiece.color.opposite) {
                 squares[enPassentLocation.index].piece = null
                 val op = BoardOperation(BoardOperation.OperationType.removePiece, enPassentPiece, enPassentLocation)
                 operations.add(op)
@@ -163,7 +157,7 @@ class Board {
 
             val piece = square.piece ?: continue
 
-            if (piece == Piece(PieceType.king, color)) {
+            if (piece.isSameTypeAndColor(Piece(PieceType.king, color))) {
                 king = piece
                 break
             }
@@ -311,7 +305,7 @@ class Board {
         }
 
         // Work out if we're in check
-        val oppositionLocations = getLocations(color.opposite())
+        val oppositionLocations = getLocations(color.opposite)
 
         // Pieces will not move to take the king, so change it for a pawn of the same color
         var noKingBoard = this

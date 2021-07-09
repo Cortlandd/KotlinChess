@@ -14,7 +14,7 @@ class BoardRaterKingSurroundingPossession(configuration: AIConfiguration) : Boar
         var rating = 0.toDouble()
 
         val ownKingLocations = locationsSurroundingKing(color, board)
-        val opponentKingLocations = locationsSurroundingKing(color.opposite(), board)
+        val opponentKingLocations = locationsSurroundingKing(color.opposite, board)
 
         // The kings will be able to move to their surrounding locations, so remove them from the board
         var noKingsBoard = board
@@ -31,14 +31,14 @@ class BoardRaterKingSurroundingPossession(configuration: AIConfiguration) : Boar
                 continue
             }
 
-            if (noKingsBoard.doesColorOccupyLocation(color.opposite(), location)) {
+            if (noKingsBoard.doesColorOccupyLocation(color.opposite, location)) {
                 rating -= squareValue
                 continue
             }
 
             if (noKingsBoard.canColorMoveAnyPieceToLocation(color, location)) {
                 rating += squareValue
-            } else if (noKingsBoard.canColorMoveAnyPieceToLocation(color.opposite(), location)) {
+            } else if (noKingsBoard.canColorMoveAnyPieceToLocation(color.opposite, location)) {
                 rating -= squareValue
             }
 
@@ -51,14 +51,14 @@ class BoardRaterKingSurroundingPossession(configuration: AIConfiguration) : Boar
                 continue
             }
 
-            if (noKingsBoard.doesColorOccupyLocation(color.opposite(), location)) {
+            if (noKingsBoard.doesColorOccupyLocation(color.opposite, location)) {
                 rating -= squareValue
                 continue
             }
 
             if (noKingsBoard.canColorMoveAnyPieceToLocation(color, location)) {
                 rating += squareValue
-            } else if (noKingsBoard.canColorMoveAnyPieceToLocation(color.opposite(), location)) {
+            } else if (noKingsBoard.canColorMoveAnyPieceToLocation(color.opposite, location)) {
                 rating -= squareValue
             }
         }

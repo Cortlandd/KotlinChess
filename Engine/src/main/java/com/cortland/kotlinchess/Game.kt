@@ -24,10 +24,13 @@ class Game: PlayerListener {
     }
 
     var board: Board
+        internal set
     var whitePlayer: Player
     var blackPlayer: Player
     var currentPlayer: Player
+        internal set
     var state: State = State.InProgress
+        internal set
     var gameListener: GameListener? = null
 
     fun gameType(): GameType {
@@ -71,15 +74,15 @@ class Game: PlayerListener {
         processBoardOperations(boardOperations)
 
         // Check for game ended
-        if (board.isColorInCheckMate(currentPlayer.color.opposite())) {
+        if (board.isColorInCheckMate(currentPlayer.color.opposite)) {
             this.state = State.Won(currentPlayer.color)
             gameListener?.gameWonByPlayer(this, currentPlayer)
             return
         }
 
         // Check for stalemate
-        if (board.isColorInStalemate(currentPlayer.color.opposite())) {
-            this.state = State.StaleMate(currentPlayer.color.opposite())
+        if (board.isColorInStalemate(currentPlayer.color.opposite)) {
+            this.state = State.StaleMate(currentPlayer.color.opposite)
             gameListener?.gameEndedInStaleMate(this)
             return
         }

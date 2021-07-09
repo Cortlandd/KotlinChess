@@ -109,11 +109,11 @@ open class PieceMovement {
                     return false
                 }
 
-                if (piece.color == movingPiece.color.opposite() && testLocation == toLocation) {
+                if (piece.color == movingPiece.color.opposite && testLocation == toLocation) {
                     return true
                 }
 
-                if (piece.color == movingPiece.color.opposite() && testLocation != toLocation) {
+                if (piece.color == movingPiece.color.opposite && testLocation != toLocation) {
                     return false
                 }
             }
@@ -400,7 +400,7 @@ class PieceMovementPawn: PieceMovement() {
             // If the target square has an opponent piece
             val piece = board.getPiece(location)
             if (piece != null) {
-                if (piece.color == color.opposite()) {
+                if (piece.color == color.opposite) {
                     return true
                 }
             }
@@ -419,7 +419,7 @@ class PieceMovementPawn: PieceMovement() {
                 break
             }
 
-            if (passingPiece.canBeTakenByEnPassant && passingPiece.color == color.opposite()) {
+            if (passingPiece.canBeTakenByEnPassant && passingPiece.color == color.opposite) {
                 return true
             }
 

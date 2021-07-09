@@ -34,9 +34,6 @@ class BoardLocation {
     var y: Int = 0
         get() = index / 8
 
-    var squareColor = Paint()
-    private var boardLocationRect: Rect = Rect()
-
     companion object {
         private val TAG = BoardLocation::class.java.simpleName
 
@@ -55,10 +52,6 @@ class BoardLocation {
                 allLocationsBacking!!
             }
         }
-    }
-
-    fun draw(canvas: Canvas) {
-        canvas.drawRect(boardLocationRect, squareColor)
     }
 
     val columnString: String?
@@ -81,18 +74,6 @@ class BoardLocation {
 
     val isDarkSquare: Boolean
         get() = (index + y) % 2 == 0
-
-    fun isTouched(x: Int, y: Int): Boolean {
-        return boardLocationRect.contains(x, y)
-    }
-
-    fun setBoardLocationRect(boardLocationRect: Rect) {
-        this.boardLocationRect = boardLocationRect
-    }
-
-    fun getBoardLocationRect(): Rect {
-        return this.boardLocationRect
-    }
 
     fun isInBounds(): Boolean {
         return (index < 64 && index >= 0)
@@ -179,23 +160,18 @@ class BoardLocation {
     constructor(index: Int) {
         this.index = index
 
-        setPaint(x, y)
+        //setPaint(x, y)
     }
 
     constructor(x: Int, y: Int) {
         this.index = x + (y * 8)
 
-        setPaint(x, y)
+        //setPaint(x, y)
     }
 
     constructor(gridPosition: GridPosition) {
         this.index = gridPosition.ordinal
 
-        setPaint(x, y)
-    }
-
-    // TODO: Do this better
-    private fun setPaint(col: Int, row: Int) {
-        squareColor.setColor(if ((col + row) % 2 == 0) Color.BLACK else Color.WHITE)
+        //setPaint(x, y)
     }
 }

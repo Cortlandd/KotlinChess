@@ -25,9 +25,9 @@ class BoardRaterCheckMateOpportunity(configuration: AIConfiguration) : BoardRate
                     var movedBoard = board
                     movedBoard.movePiece(sourceLocation, location)
 
-                    if (piece.color == color && movedBoard.isColorInCheckMate(color.opposite())) {
+                    if (piece.color == color && movedBoard.isColorInCheckMate(color.opposite)) {
                         rating += value
-                    } else if (piece.color == color.opposite() && movedBoard.isColorInCheckMate(color)) {
+                    } else if (piece.color == color.opposite && movedBoard.isColorInCheckMate(color)) {
                         rating -= value
                     }
                 }
