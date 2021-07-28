@@ -1,24 +1,21 @@
 package com.cortland.kotlinchess.example
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.cortland.kotlinchess.BoardLocation
-import com.cortland.kotlinchess.BoardView
-import com.cortland.kotlinchess.Interfaces.BoardViewListener
+import com.cortland.kotlinchess.example.game.GameActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
-
-class MainActivity : AppCompatActivity(),
-    BoardViewListener {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        boardView.boardViewListener = this
-    }
+        startGameButton.setOnClickListener {
+            val i = Intent(this, GameActivity::class.java)
+            startActivity(i)
+        }
 
-    override fun onLocationTouched(boardView: BoardView, location: BoardLocation) {
-        println("My location is: ${location.index}")
     }
 }
