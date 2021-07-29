@@ -57,6 +57,8 @@ open class Player {
     fun canMovePiece(fromLocation: BoardLocation, toLocation: BoardLocation): Boolean {
         val game = this.game ?: return false
 
+        // Keep board copy
+
         // We can't move to our current location
         if (fromLocation == toLocation) {
             throw PieceMoveError.movingToSameLocation.throwPlayerError()
@@ -77,13 +79,11 @@ open class Player {
         }
 
         // Make sure we are not leaving the board state in check
-        // Use copy() to prevent modifying the game board
-        val inCheckBeforeMove = game.board.copy().isColorInCheck(this.color)
+        val inCheckBeforeMove = game.board.isColorInCheck(this.color)
+
+        val board = game.board.cloneBoard()
 
         // Move the Piece
-        val board = game.board
-
-        // TODO: IMPORTANT
         board.movePiece(fromLocation, toLocation)
 
         val inCheckAfterMove = board.isColorInCheck(this.color)

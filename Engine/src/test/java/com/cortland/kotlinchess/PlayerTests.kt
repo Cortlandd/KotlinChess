@@ -91,6 +91,7 @@ class PlayerTests: TestCase() {
             val canMove = player.canMovePiece(queenLocation, targetLocation)
             assertNull(canMove)
         } catch (e: Player.PieceMoveErrorException) {
+            println(e)
             assertTrue(e.message == PieceMoveError.cannotMoveInToCheck.description)
         }
     }

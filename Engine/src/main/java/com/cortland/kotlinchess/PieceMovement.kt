@@ -39,7 +39,7 @@ open class PieceMovement {
 
             val color = board.getPiece(fromLocation)!!.color
 
-            var boardCopy = board
+            val boardCopy = board.cloneBoard()
             boardCopy.movePiece(fromLocation, toLocation)
             return !boardCopy.isColorInCheck(color)
         } else {

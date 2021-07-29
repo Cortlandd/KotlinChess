@@ -1027,6 +1027,8 @@ class PieceMovementTests {
                 "P - - - - - - -" +
                 "- - - - - - - G" )
 
+        var boardCopy = board.board().cloneBoard()
+
         var game = makeGame( board = board.board(), colorToMove = white)
         var whitePlayer = game.whitePlayer as Human
         var blackPlayer = game.blackPlayer as Human

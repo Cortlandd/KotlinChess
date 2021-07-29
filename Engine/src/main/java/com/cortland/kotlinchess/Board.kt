@@ -3,6 +3,7 @@ package com.cortland.kotlinchess
 import android.util.Log
 import com.cortland.kotlinchess.Piece.PieceType
 import com.cortland.kotlinchess.Piece.PieceType.*
+import com.google.gson.Gson
 import kotlin.math.max
 import kotlin.math.min
 
@@ -274,7 +275,7 @@ data class Board(var state: InitialState) {
                     continue
                 }
 
-                var resultBoard = this.copy()
+                var resultBoard = this.cloneBoard()
                 resultBoard.movePiece(pieceLocation, targetLocation)
                 if (!resultBoard.isColorInCheck(color)) {
                     return true
@@ -311,7 +312,7 @@ data class Board(var state: InitialState) {
         val oppositionLocations = getLocations(color.opposite)
 
         // Pieces will not move to take the king, so change it for a pawn of the same color
-        var noKingBoard = this
+        var noKingBoard = this.cloneBoard()
         noKingBoard.squares[kingLocation.index].piece = Piece(pawn, color)
 
         for (location in oppositionLocations) {
@@ -342,7 +343,7 @@ data class Board(var state: InitialState) {
                 val canMove = piece.movement.canPieceMove(pieceLocation, targetLocation, this)
 
                 if (canMove) {
-                    val resultBoard = this
+                    val resultBoard = this.cloneBoard()
                     resultBoard.movePiece(pieceLocation, targetLocation)
                     if (resultBoard.isColorInCheck(color) == false) {
                         return false
@@ -556,4 +557,8 @@ data class Board(var state: InitialState) {
         println(printString)
     }
 
+    fun cloneBoard(): Board {
+        val JSON = Gson().toJson(this)
+        return Gson().fromJson(JSON, Board::class.java)
+    }
 }
