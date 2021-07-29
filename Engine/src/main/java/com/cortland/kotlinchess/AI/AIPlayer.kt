@@ -58,6 +58,8 @@ open class AIPlayer: Player {
 
     fun makeMoveSync() {
 
+        val game = this.game ?: return
+
         //print("\n\n****** Make Move ******");
 
         // Check that the game is in progress
@@ -107,7 +109,7 @@ open class AIPlayer: Player {
             operations.add(transformOperation)
         }
 
-        val strongGame = this.game
+        val strongGame = this.game!!
         GlobalScope.async {
             strongGame.playerDidMakeMove(player = this@AIPlayer, boardOperations = operations)
         }
@@ -180,9 +182,7 @@ open class AIPlayer: Player {
         val castleSides = arrayListOf(CastleSide.kingSide, CastleSide.queenSide)
         for (side in castleSides) {
 
-            if (!(game.board.canColorCastle(color, side))) {
-                continue
-            }
+            if (game?.board!!.canColorCastle(color, side)) false else continue
 
             // Perform the castling move
             var resultBoard = board

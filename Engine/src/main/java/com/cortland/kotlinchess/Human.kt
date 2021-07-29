@@ -11,6 +11,8 @@ open class Human: Player {
     @Throws(PieceMoveErrorException::class)
     fun movePiece(fromLocation: BoardLocation, toLocation: BoardLocation) {
 
+        val game = this.game ?: return
+
         // Check that the game is in progress
         if (game.state != Game.State.InProgress) {
             throw PieceMoveError.gameIsNotInProgress.throwPlayerError()
@@ -38,10 +40,10 @@ open class Human: Player {
 
             val pawnLocation = promotablePawnLocations.first()
 
-            this.game.gameListener?.promotedTypeForPawn(pawnLocation, this, Piece.PieceType.possiblePawnPromotionResultingTypes()) {
+            game.gameListener?.promotedTypeForPawn(pawnLocation, this, Piece.PieceType.possiblePawnPromotionResultingTypes()) {
                 // Change the piece
-                val newPiece = this.game.board.squares[pawnLocation.index].piece?.byChangingType(it)
-                this.game.board.setPiece(newPiece!!, pawnLocation)
+                val newPiece = game.board.squares[pawnLocation.index].piece?.byChangingType(it)
+                game.board.setPiece(newPiece!!, pawnLocation)
 
                 // Add a transform piece operation
                 val modifyOperation = BoardOperation(BoardOperation.OperationType.transformPiece, newPiece, pawnLocation)
@@ -60,6 +62,8 @@ open class Human: Player {
     }
 
     public fun performCastleMove(side: CastleSide) {
+
+        val game = this.game ?: return
 
         // Check that we're the current player
         if (!(game.currentPlayer === this)) {

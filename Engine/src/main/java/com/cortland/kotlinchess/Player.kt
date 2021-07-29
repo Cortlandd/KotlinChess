@@ -5,7 +5,7 @@ import com.cortland.kotlinchess.Interfaces.PlayerListener
 open class Player {
 
     lateinit var color: Color
-    lateinit var game: Game
+    var game: Game? = null
     var playerListener: PlayerListener? = null
 
     class PieceMoveErrorException(error: PieceMoveError): Exception(error.description)
@@ -42,7 +42,9 @@ open class Player {
 
     fun occupiesSquareAt(location: BoardLocation): Boolean {
 
-        this.game.board.getPiece(location)?.let { piece ->
+        val game = this.game ?: return false
+
+        game.board.getPiece(location)?.let { piece ->
             if (piece.color == this.color) {
                 return true
             }
@@ -53,13 +55,15 @@ open class Player {
 
     @Throws(PieceMoveErrorException::class)
     fun canMovePiece(fromLocation: BoardLocation, toLocation: BoardLocation): Boolean {
+        val game = this.game ?: return false
+
         // We can't move to our current location
         if (fromLocation == toLocation) {
             throw PieceMoveError.movingToSameLocation.throwPlayerError()
         }
 
         // Get the piece
-        val piece = this.game.board.getPiece(fromLocation) ?: throw PieceMoveError.noPieceToMove.throwPlayerError()
+        val piece = game.board.getPiece(fromLocation) ?: throw PieceMoveError.noPieceToMove.throwPlayerError()
 
         // Check that the piece color matches the player color
         if (piece.color != this.color) {
@@ -67,20 +71,20 @@ open class Player {
         }
 
         // Make sure the piece can move to the location
-        if (!piece.movement.canPieceMove(fromLocation, toLocation, game.board)) {
+        if (!piece.movement.canPieceMove(fromLocation = fromLocation, toLocation = toLocation, board = game.board)) {
             println("Piece at $fromLocation cannot move to $toLocation")
             throw PieceMoveError.pieceUnableToMoveToLocation.throwPlayerError()
         }
 
         // Make sure we are not leaving the board state in check
-        val inCheckBeforeMove = this.game.board.isColorInCheck(this.color)
+        // Use copy() to prevent modifying the game board
+        val inCheckBeforeMove = game.board.copy().isColorInCheck(this.color)
 
         // Move the Piece
-        val board = this.game.board
+        val board = game.board
 
         // TODO: IMPORTANT
-        // TODO: Look back at this. BECAUSE PLAYER CANNOT MOVE WITHOUT COMMENTING THIS OUT
-        //board.movePiece(fromLocation, toLocation)
+        board.movePiece(fromLocation, toLocation)
 
         val inCheckAfterMove = board.isColorInCheck(this.color)
 

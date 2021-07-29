@@ -56,8 +56,8 @@ data class ASCIIBoard(var pieces: String = "", var colors: String = "") {
 
         // We only care about colours, not piece types, so just make pawns
         if (stringContainsColors) {
-            boardArt = boardArt.replace("B", "p")
-            boardArt = boardArt.replace("W", "P")
+            boardArt = boardArt.replace('B', 'p')
+            boardArt = boardArt.replace('W', 'P')
         }
 
         var board = Board(state = Board.InitialState.empty)
@@ -68,7 +68,7 @@ data class ASCIIBoard(var pieces: String = "", var colors: String = "") {
         }
 
         // Setup pieces from ascii art
-        (0..64-1).forEach { n ->
+        (0..63).forEach { n ->
             val character = boardArt[n]
 
             val piece = piece(character)
@@ -142,7 +142,7 @@ data class ASCIIBoard(var pieces: String = "", var colors: String = "") {
 
         var indexes = ArrayList<Int>()
 
-        (0..64-1).forEach {
+        (0..63).forEach {
             val aCharacter = artString[it]
 
             if (character == aCharacter) {

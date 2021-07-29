@@ -12,11 +12,11 @@ class Square {
 
 }
 
-class Board(state: InitialState) {
+data class Board(var state: InitialState) {
 
     val TAG = Board::class.java.simpleName
 
-    var squares: MutableList<Square> = mutableListOf<Square>()
+    var squares: ArrayList<Square> = arrayListOf<Square>()
         private set
 
     private var lastAssignedPieceTag = 0
@@ -70,8 +70,8 @@ class Board(state: InitialState) {
     // Pieces
 
     fun setPiece(piece: Piece, location: BoardLocation) {
-        squares[location.index].piece = piece
-        squares[location.index].piece?.location = location
+        this.squares[location.index].piece = piece
+        this.squares[location.index].piece?.location = location
     }
 
     fun getPiece(location: BoardLocation): Piece? {
@@ -79,7 +79,7 @@ class Board(state: InitialState) {
     }
 
     fun removePiece(location: BoardLocation) {
-        squares[location.index].piece = null
+        this.squares[location.index].piece = null
     }
 
     internal fun movePiece(fromLocation: BoardLocation, toLocation: BoardLocation): ArrayList<BoardOperation> {
@@ -90,7 +90,7 @@ class Board(state: InitialState) {
 
         var operations = ArrayList<BoardOperation>()
 
-        val movingPiece = getPiece(fromLocation) ?: throw Exception("There is no piece on at (${fromLocation.x}, ${fromLocation.y})")
+        val movingPiece = getPiece(fromLocation) ?: throw Exception("There is no piece on the board at (${fromLocation.x}, ${fromLocation.y})")
 
         val operation = BoardOperation(BoardOperation.OperationType.movePiece, movingPiece, toLocation)
         operations.add(operation)
@@ -102,22 +102,25 @@ class Board(state: InitialState) {
         }
 
         squares[toLocation.index].piece = this.squares[fromLocation.index].piece
-        squares[toLocation.index].piece?.location = toLocation
-        squares[toLocation.index].piece?.hasMoved = true
+        squares[toLocation.index].piece!!.location = toLocation
+        squares[toLocation.index].piece!!.hasMoved = true
         squares[fromLocation.index].piece = null
 
+
         // If the moving piece is a pawn, check whether it just made an en passent move, and remove the passed piece
-        (movingPiece.type == pawn).also {
+        if (movingPiece.type == pawn) {
             val stride = fromLocation.strideTo(toLocation)
             val enPassentStride = BoardStride(stride.x, 0)
-            val enPassentLocation = fromLocation.incrementedBy(enPassentStride)
+            val enPassentLocation = fromLocation.incrementedBy(stride = enPassentStride)
 
-            val enPassentPiece = getPiece(enPassentLocation) ?: return@also
+            var enPassentPiece = this.getPiece(enPassentLocation)
 
-            if (enPassentPiece.canBeTakenByEnPassant && enPassentPiece.color == movingPiece.color.opposite) {
-                squares[enPassentLocation.index].piece = null
-                val op = BoardOperation(BoardOperation.OperationType.removePiece, enPassentPiece, enPassentLocation)
-                operations.add(op)
+            if (enPassentPiece != null) {
+                if (enPassentPiece.canBeTakenByEnPassant && enPassentPiece.color == movingPiece.color.opposite) {
+                    squares[enPassentLocation.index].piece = null
+                    val op = BoardOperation(BoardOperation.OperationType.removePiece, enPassentPiece, enPassentLocation)
+                    operations.add(op)
+                }
             }
         }
 
@@ -143,7 +146,7 @@ class Board(state: InitialState) {
     fun resetEnPassantFlags() {
 
         for (i in 0 until squares.count()) {
-            squares[i].piece?.canBeTakenByEnPassant = false
+            this.squares[i].piece?.canBeTakenByEnPassant = false
         }
     }
 
@@ -271,7 +274,7 @@ class Board(state: InitialState) {
                     continue
                 }
 
-                var resultBoard = this
+                var resultBoard = this.copy()
                 resultBoard.movePiece(pieceLocation, targetLocation)
                 if (!resultBoard.isColorInCheck(color)) {
                     return true
@@ -315,7 +318,7 @@ class Board(state: InitialState) {
 
             val piece = getPiece(location) ?: continue
 
-            if (piece.movement.canPieceMove(location, kingLocation, noKingBoard)) {
+            if (piece.movement.canPieceMove(fromLocation = location, toLocation = kingLocation, board = noKingBoard)) {
                 return true
             }
         }

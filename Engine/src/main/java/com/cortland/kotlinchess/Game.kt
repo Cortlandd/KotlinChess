@@ -58,7 +58,7 @@ class Game: PlayerListener {
         this.blackPlayer.playerListener = this
         this.whitePlayer.game = this
         this.blackPlayer.game = this
-        this.currentPlayer = (if (colorToMove == Color.white) this.whitePlayer else this.blackPlayer)
+        this.currentPlayer = if (colorToMove == Color.white) this.whitePlayer else this.blackPlayer
     }
 
     override fun playerDidMakeMove(player: Player, boardOperations: ArrayList<BoardOperation>) {

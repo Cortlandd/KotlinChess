@@ -27,6 +27,7 @@ open class PieceMovement {
         }
     }
 
+    // TODO: Losing pieces once here is reached
     fun canPieceMove(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board, accountForCheckState: Boolean = false): Boolean {
         if (fromLocation == toLocation) {
             return false
@@ -40,8 +41,7 @@ open class PieceMovement {
 
             var boardCopy = board
             boardCopy.movePiece(fromLocation, toLocation)
-
-            return if (boardCopy.isColorInCheck(color)) false else true
+            return !boardCopy.isColorInCheck(color)
         } else {
             return canMove
         }
@@ -91,7 +91,7 @@ open class PieceMovement {
         // Get the moving piece
         val movingPiece = board.getPiece(fromLocation)
         if (movingPiece == null) {
-            print("Cannot from an index that does not contain a piece")
+            print("Cannot move from an index that does not contain a piece")
             return false
         }
 
@@ -104,7 +104,8 @@ open class PieceMovement {
         while (testLocation.isInBounds()) {
 
             // If there is a piece on the square
-            board.getPiece(testLocation)?.also { piece ->
+            val piece = board.getPiece(testLocation)
+            if (piece != null) {
                 if (piece.color == movingPiece.color) {
                     return false
                 }
@@ -136,7 +137,7 @@ open class PieceMovement {
 
     fun canPieceOccupySquare(pieceLocation: BoardLocation, xOffset: Int, yOffset: Int, board: Board): Boolean {
 
-        val targetLocation = pieceLocation.incrementedBy(xOffset, yOffset)
+        val targetLocation = pieceLocation.incrementedBy(x = xOffset, y = yOffset)
 
         // Check if in bounds
         if (!targetLocation.isInBounds()) {
@@ -151,7 +152,7 @@ open class PieceMovement {
         // Check if space is occupied
         val movingPiece = board.getPiece(pieceLocation)
         if (movingPiece == null) {
-            print("Cannot from an index that does not contain a piece")
+            print("Cannot move from an index that does not contain a piece")
             return false
         }
 
@@ -228,12 +229,12 @@ open class PieceMovementDiagonal: PieceMovement() {
 
 open class PieceMovementQueen: PieceMovement() {
 
-    var movements = mutableListOf(PieceMovementStraightLine(), PieceMovementDiagonal())
+    var movements = listOf(PieceMovementStraightLine(), PieceMovementDiagonal())
 
     override fun isMovementPossible(fromLocation: BoardLocation, toLocation: BoardLocation, board: Board): Boolean {
         for (pieceMovement in movements) {
 
-            if (pieceMovement.canPieceMove(fromLocation, toLocation, board)) {
+            if (pieceMovement.canPieceMove(fromLocation = fromLocation, toLocation = toLocation, board = board)) {
                 return true
             }
         }
