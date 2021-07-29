@@ -17,7 +17,7 @@ allprojects {
 
 ```kotlin
 dependencies {
-  implementation 'com.github.Cortlandd:KotlinChess:1.0'
+  implementation 'com.github.Cortlandd:KotlinChess:1.1'
 }
 ```
 
