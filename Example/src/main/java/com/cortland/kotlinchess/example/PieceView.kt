@@ -2,6 +2,7 @@ package com.cortland.kotlinchess.example
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.view.View
@@ -31,10 +32,16 @@ class PieceView(piece: Piece, var location: BoardLocation, context: Context): Vi
         super.onDraw(canvas)
 
         updateImage()
+
+        val paint = Paint()
+        paint.setStyle(Paint.Style.FILL)
+        paint.setColor(android.graphics.Color.RED)
+        paint.textSize = 50.toFloat()
         if (mPieceImage != null) {
             if (canvas != null) {
                 mPieceImage!!.bounds = this.clipBounds
                 mPieceImage!!.draw(canvas)
+                canvas.drawText(piece.location.index.toString(), this.clipBounds.exactCenterX().toFloat(), this.clipBounds.exactCenterY().toFloat(), paint)
             }
         }
     }
